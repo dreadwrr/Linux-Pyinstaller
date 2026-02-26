@@ -1,4 +1,4 @@
-## Pyinstaller Linux qt <br>
+## Pyinstaller Linux qt recentchanges <br>
 cd /usr/local/recentchanges <br>
 python -m venv .venv <br>
 source .venv/bin/activate <br>
