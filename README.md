@@ -1,4 +1,4 @@
-# Pyinstaller Linux qt <br>
+## Pyinstaller Linux qt <br>
 to build a binary with all the packages and not needing any on the system <br>
 cd /usr/local/recentchanges <br>
 chown guest:users /usr/local/recentchanges <br>
