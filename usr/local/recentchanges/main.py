@@ -177,7 +177,7 @@ class MainWindow(QMainWindow):
         # QTimer.singleShot(5000, self.display_db)
 
         # Vars
-        self.app_version = "5.0.2"
+        self.app_version = "5.0.3"
         self.PWD = os.getcwd()
         self.home_dir = home_dir
         config_local = home_dir / ".config" / "recentchanges"
