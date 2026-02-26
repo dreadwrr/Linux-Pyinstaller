@@ -1,7 +1,5 @@
 ## Pyinstaller Linux qt <br>
-to build a binary with all the packages and not needing any on the system <br>
 cd /usr/local/recentchanges <br>
-chown guest:users /usr/local/recentchanges <br>
 python -m venv .venv <br>
 source .venv/bin/activate <br>
 python -m pip install --upgrade pi <br>
@@ -24,3 +22,4 @@ if there is an error about webengine add to main.spec <br>
         'PySide6.QtPrintSupport', <br>
 	], <br>
 <br>
+repeat pyinstall from above <br>
