@@ -1,4 +1,4 @@
-# Pyinstaller Linux qt <br><br>
+# Pyinstaller Linux qt <br>
 cd /usr/local/recentchanges <br>
 chown guest:users /usr/local/recentchanges <br>
 python -m venv .venv <br>
