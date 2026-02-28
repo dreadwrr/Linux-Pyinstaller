@@ -2,7 +2,7 @@
 cd /usr/local/recentchanges <br>
 python -m venv .venv <br>
 source .venv/bin/activate <br>
-python -m pip install --upgrade pi <br>
+python -m pip install --upgrade pip <br>
 pip install -r requirements.txt <br>
 pip install pyinstaller <br>
 pyinstaller --onedir main.py --collect-all=libshiboken <br>
