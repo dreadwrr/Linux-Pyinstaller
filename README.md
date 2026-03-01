@@ -1,8 +1,7 @@
 ## Pyinstaller Linux qt recentchanges <br><br>
 
-New update as some changes had to be made to make it fully independent. This includes <br>
-having the file filter which was filter.py in a toml file. filter.toml. Also an update to <br>
-the launcher script so commandline runs off executable.<br><br>
+New update for launcher script to use the binary for commandline. This includes <br>
+having the file filter which was filter.py in a toml file. filter.toml. Also an update to <br><br>
 
 cd /usr/local/recentchanges <br>
 python -m venv .venv <br>
