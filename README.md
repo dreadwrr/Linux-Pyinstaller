@@ -6,7 +6,9 @@ python -m pip install --upgrade pip <br>
 pip install -r requirements.txt <br>
 pip install pyinstaller <br>
 pyinstaller --onedir main.py --collect-all=libshiboken <br>
-copy main and _internal from dist/main folder to /usr/local/recentchanges ./main <br> 
+copy main and _internal from dist/main folder to /usr/local/recentchanges ./main <br>
+chown root:root /usr/local/recentchanges
+
 optionally remove src/ and main.py <br><br>
 
 compatibility if the above fails again from the venv<br>
