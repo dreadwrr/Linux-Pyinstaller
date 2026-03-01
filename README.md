@@ -13,7 +13,7 @@ pip install pyinstaller <br>
 pyinstaller --onedir main.py --collect-all=libshiboken <br>
 copy main and _internal from dist/main folder to /usr/local/recentchanges ./main <br>
 chown root:root main <br>
-chown root:root /usr/local/recentchanges
+chown root:root /usr/local/recentchanges <br>
 
 optionally remove src/ and main.py <br><br>
 
