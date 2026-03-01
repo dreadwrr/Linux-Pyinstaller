@@ -113,7 +113,7 @@ def logger_process(queue, sys_tables, rout, scr, cerr, dbopt, ps, logger=None):
                         log.error(em, exc_info=True)
 
 
-def hanly_parallel(drive_type, rout, scr, cerr, parsed, ANALYTICSECT, checksum, cdiag, dbopt, ps, user, logging_values, sys_tables, iqt=False, strt=65, endp=90):
+def hanly_parallel(drive_type, rout, scr, cerr, parsed, cachermPATTERNS, ANALYTICSECT, checksum, cdiag, dbopt, ps, user, logging_values, sys_tables, iqt=False, strt=65, endp=90):
 
     if not parsed:
         return
@@ -133,7 +133,7 @@ def hanly_parallel(drive_type, rout, scr, cerr, parsed, ANALYTICSECT, checksum, 
 
     if len_parsed < 80 or drive_type.lower() == "hdd":
 
-        all_results, batch_incr, logs, csum = hanly(parsed, checksum, cdiag, dbopt, ps, user, logging_values, sys_tables, show_progress, strt, endp)
+        all_results, batch_incr, logs, csum = hanly(parsed, cachermPATTERNS, checksum, cdiag, dbopt, ps, user, logging_values, sys_tables, show_progress, strt, endp)
         work_q = queue.SimpleQueue()
         work_q.put((all_results, batch_incr, logs))
         work_q.put(SENTINEL)
@@ -151,7 +151,7 @@ def hanly_parallel(drive_type, rout, scr, cerr, parsed, ANALYTICSECT, checksum, 
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
             futures = [
                 executor.submit(
-                    hanly, chunk, checksum, cdiag, dbopt, ps, user, logging_values, sys_tables, False
+                    hanly, chunk, cachermPATTERNS, checksum, cdiag, dbopt, ps, user, logging_values, sys_tables, False
                 )
                 for chunk in chunks
             ]

@@ -5,57 +5,9 @@ from datetime import datetime
 from .configfunctions import not_absolute
 
 
-# terminal and hardlink suppression
-suppress_terminal = [
-    r'mozilla',
-    r'\.mozilla',
-    r'chromium-ungoogled',
-    r'/home/{{user}}/\.config/recentchanges/config\.bak'
-    # r'google-chrome',
-]
+def reset_csvliteral(csv_file, filterhitRESET):
 
-
-# patterns to delete from db.
-cache_clear = [
-    "%caches%",
-    "%cache2%",
-    "%Cache2%",
-    "%.cache%",
-    "%share/Trash%",
-    "%home/{{user}}/.local/state/wireplumber%",
-    "%root/.local/state/wireplumber%",
-    "%usr/share/mime/application%",
-    "%usr/share/mime/text%",
-    "%usr/share/mime/image%",
-    "%release/cache%",
-]
-
-
-# filter hits to reset on db cache clear. copy literal items from /usr/local/recentchanges/filter.py to reset to 0
-flth_literal_patterns = [
-    r'\.cache',
-    r'/home/{{user}}/\.config',
-    r'/home/{{user}}/\.Xauthority',
-    r'/root/\.Xauthority',
-    r'/home/{{user}}/\.local/state/wireplumber',
-    r'/root/\.local/state/wireplumber'
-]
-
-
-def suppress_list(escaped_user):
-    suppress_list = [p.replace("{{user}}", escaped_user) for p in suppress_terminal]
-    compiled = [re.compile(p) for p in suppress_list]
-    return compiled
-
-
-def get_delete_patterns(usr):
-    patterns = [p.replace("{{user}}", usr) for p in cache_clear]
-    return patterns
-
-
-def reset_csvliteral(csv_file):
-
-    patterns_to_reset = flth_literal_patterns
+    patterns_to_reset = filterhitRESET
     try:
         with open(csv_file, newline='') as f:
             reader = csv.reader(f)

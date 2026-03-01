@@ -40,8 +40,8 @@ from . import processha
 from .configfunctions import check_config
 from .configfunctions import find_install
 from .configfunctions import get_config
-from .configfunctions import load_toml
-from .configfunctions import update_toml_values
+from .config import load_toml
+from .config import update_toml_values
 from .dirwalker import scan_system
 from .dirwalkerfunctions import get_base_folders
 from .filterhits import update_filter_csv
@@ -110,7 +110,6 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
     #     print("tty from qt")
     # else:
     #     print("No tty")
-
     signal.signal(signal.SIGINT, sighandle)
     signal.signal(signal.SIGTERM, sighandle)
 
@@ -120,12 +119,12 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
     if method != "rnt" and argone.lower() != "search":
         print("exiting not a search")
         sys.exit(1)
-    if not iqt:
-        caller_script = Path(sys.argv[0]).resolve()
-        launcher = os.path.basename(caller_script)
-        if str(launcher) != "rntchanges.py":
-            print("please call from recentchanges from /usr/local/bin")
-            sys.exit(1)
+    # if not iqt:
+    #     caller_script = Path(sys.argv[0]).resolve()
+    #     launcher = os.path.basename(caller_script)
+    #     if str(launcher) != "rntchanges.py":
+    #         print("please call from recentchanges from /usr/local/bin")
+    #         sys.exit(1)
 
     global is_mcore
 
@@ -164,6 +163,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
     POSTOP = config['diagnostics']['POSTOP']
     ps = config['shield']['proteusSHIELD']  # proteus shield
     show_diff = config['diagnostics']['showDIFF']
+    supbrwLIST_toml = config['diagnostics']['supbrwLIST']
     compLVL = config['logs']['compLVL']
     MODULENAME = config['paths']['MODULENAME']
     archivesrh = config['search']['archivesrh']
@@ -181,6 +181,26 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
     # if dspEDITOR:
     #     dspEDITOR = multi_value(dspEDITOR)
     # dspPATH_frm = config['display']['dspPATH'].rstrip('/')
+
+    escaped_user = re.escape(USR)
+
+    filters_toml = appdata_local / "filter.toml"
+    filters = load_toml(filters_toml)
+    if not filters:
+        return 1
+    filter_toml = filters.get("filter", None)
+    cachermPATTERNS_toml = filters.get("cachermPATTERNS", None)
+
+    cachermPATTERNS = [
+        p.replace("{{user}}", USR)
+        for p in cachermPATTERNS_toml
+    ]
+
+    supbrwLIST = [
+        p.replace("{{user}}", escaped_user)
+        for p in supbrwLIST_toml
+    ]
+
 
     # make a named tuple or dict for args and to pass less args for clarity
     user_setting = {
@@ -218,8 +238,8 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
         if ps or scanIDX:
             proteusPATH = config['shield']['proteusPATH']
             nogo = user_path(config['shield']['nogo'], USR)
-            suppress_list = user_path(config['shield']['filterout'], USR)
-            if not check_config(proteusPATH, nogo, suppress_list):
+            filterout_list = user_path(config['shield']['filterout'], USR)  # conflict <----
+            if not check_config(proteusPATH, nogo, filterout_list):
                 return 1
 
         # if the drive type is not set auto detect it and update toml. look in json for partuuid and build CACHE_S
@@ -238,7 +258,6 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
 
     # VARS
     log_file = home_dir / ".local" / "state" / "recentchanges" / "logs" / log_file
-    escaped_user = re.escape(USR)
 
     TMPOUTPUT = []  # holding
     # Searches
@@ -414,7 +433,8 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
 
             RECENT, COMPLETE_1, RECENTNUL, end, cstart = find_files(
                 find_command_mmin, search_paths, "main", RECENT, COMPLETE_1, RECENTNUL, init, cfr,
-                search_start_dt, user_setting, logging_values, end, cstart, iqt=iqt, strt=proval, endp=endval, logger=logger
+                search_start_dt, user_setting, logging_values, end, cstart, iqt=iqt, strt=proval, 
+                endp=endval, logger=logger
             )
 
         else:
@@ -428,7 +448,8 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
 
             tout, COMPLETE_2, RECENTNUL, end, cstart = find_files(
                 find_command_cmin, search_paths, "ctime", tout, COMPLETE_2, RECENTNUL, init, cfr,
-                search_start_dt, user_setting, logging_values, end, cstart, iqt=iqt, strt=proval, endp=endval, logger=logger
+                search_start_dt, user_setting, logging_values, end, cstart, iqt=iqt, strt=proval, 
+                endp=endval, logger=logger
             )
 
             cmin_end = time.time()
@@ -445,7 +466,8 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
 
             RECENT, COMPLETE_1, RECENTNUL, end, cstart = find_files(
                 find_command_mmin, search_paths, "main", RECENT, COMPLETE_1, RECENTNUL, init, cfr,
-                search_start_dt, user_setting, logging_values, end, cstart, iqt=iqt, strt=proval, endp=endval, logger=logger
+                search_start_dt, user_setting, logging_values, end, cstart, iqt=iqt, strt=proval, 
+                endp=endval, logger=logger
             )
 
         cend = time.time()
@@ -555,7 +577,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
         RECENT = TMPOPT[:]
 
         # Apply filter. RECENT is unfiltered all data to store in db
-        TMPOPT = filter_lines_from_list(TMPOPT, escaped_user)
+        TMPOPT = filter_lines_from_list(TMPOPT, escaped_user, filter_toml)
 
         logf = []
         logf = RECENT
@@ -683,7 +705,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
                 print(f"Progress: {proval}", flush=True)
             # Backend
             dbopt = pst_srg(
-                dbopt, dbtarget, basedir, SORTCOMPLETE, COMPLETE, rout, scr, cerr, CACHE_S, user_setting, logging_values,
+                dbopt, dbtarget, basedir, SORTCOMPLETE, COMPLETE, cachermPATTERNS, rout, scr, cerr, CACHE_S, user_setting, logging_values,
                 dcr=dcr, iqt=iqt, strt=proval, endp=endval
             )
             # dbopt return from pst_srg is either path, encr_error, new_profile or None
@@ -707,17 +729,17 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
                 print()
 
             # Diff output to user
-            csum = processha.processha(rout, ABSENT, diff_file, cerr, flsrh, argf, SRTTIME, escaped_user, suppress_browser, suppress)
+            csum = processha.processha(rout, ABSENT, diff_file, supbrwLIST, filter_toml, cerr, flsrh, argf, SRTTIME, escaped_user, suppress_browser, suppress)
 
             # Filter hits
-            update_filter_csv(RECENT, flth, escaped_user)
+            update_filter_csv(RECENT, flth, escaped_user, filter_toml)
             sys.stdout.flush()
 
             # File doctrine
             if POSTOP:
                 outpath = os.path.join(USRDIR, tsv_doc)
                 if not os.path.isfile(outpath):
-                    if build_tsv(SORTCOMPLETE, rout, outpath):
+                    if build_tsv(SORTCOMPLETE, TMPOPT, logf, rout, filter_toml, escaped_user, outpath, method, fmt):
                         change_perm(outpath, uid, gid)
                         cprint.green(f"File doctrine.tsv created {USRDIR}/{tsv_doc}")
                 elif not iqt:
@@ -726,7 +748,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
             # Terminal output process scr/cer
             if not csum and not suppress:
                 if os.path.exists(scr):
-                    filter_output(scr, escaped_user, 'Checksum', 'no', 'blue', 'yellow', 'scr', suppress_browser)
+                    filter_output(scr, 'Checksum', 'no', 'blue', 'yellow', 'scr', supbrwLIST, suppress_browser)
 
             if csum:
                 if os.path.isfile(cerr):

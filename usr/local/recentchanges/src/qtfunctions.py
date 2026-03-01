@@ -20,7 +20,6 @@ from .gpgcrypto import decr
 from .gpgcrypto import decrypt_from_text
 from .gpgcrypto import encr
 from .gpgcrypto import encrypt_to_text
-from .pyfunctions import get_delete_patterns
 from .pyfunctions import is_integer
 # 02/18/2026
 
@@ -336,12 +335,11 @@ def commit_note(logger, notes, email, query):
 # end QSql
 
 
-def clear_cache(conn, cur, usr, log_fn=print):
+def clear_cache(conn, cur, cache_patterns, log_fn=print):
 
-    files_d = get_delete_patterns(usr)
     filename_pattern = None
     try:
-        for filename_pattern in files_d:
+        for filename_pattern in cache_patterns:
             cur.execute("DELETE FROM logs WHERE filename LIKE ?", (filename_pattern,))
             cur.execute("DELETE FROM stats WHERE filename LIKE ?", (filename_pattern,))
         if filename_pattern is not None:
@@ -529,7 +527,7 @@ def help_about(lclhome, hudt):
     # layout.setSpacing(15)
     # layout.setContentsMargins(20, 20, 20, 20)
 
-    label = QLabel("v5.0\n\nCreated by Colby Saigeon\nh&k enterprisez\n\nFind recent files using powershell.")
+    label = QLabel("v5.0.4\n\nCreated by Colby Saigeon\nh&k enterprisez\n\nFind recent files using powershell.")
     # label.setWordWrap(True)
     layout.addWidget(label)
 

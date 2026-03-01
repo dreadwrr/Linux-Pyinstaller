@@ -55,7 +55,7 @@ def collision_check(xdata, cerr, c, ps):
     return csum
 
 
-def main(dbopt, dbtarget, basedir, xdata, COMPLETE, rout, scr, cerr, CACHE_S, user_setting, logging_values, dcr=False, iqt=False, strt=65, endp=90):
+def main(dbopt, dbtarget, basedir, xdata, COMPLETE, cachermPATTERNS, rout, scr, cerr, CACHE_S, user_setting, logging_values, dcr=False, iqt=False, strt=65, endp=90):
 
     user = user_setting['USR']
     email = user_setting['email']
@@ -153,7 +153,7 @@ def main(dbopt, dbtarget, basedir, xdata, COMPLETE, rout, scr, cerr, CACHE_S, us
                 try:
                     if iqt:
                         print(f"Progress: {strt}", flush=True)
-                    csum = hanly_parallel(model_type, rout, scr, cerr, xdata, ANALYTICSECT, checksum, cdiag, dbopt, is_ps, user, logging_values, sys_tables, iqt, strt, endp)
+                    csum = hanly_parallel(model_type, rout, scr, cerr, xdata, cachermPATTERNS, ANALYTICSECT, checksum, cdiag, dbopt, is_ps, user, logging_values, sys_tables, iqt, strt, endp)
 
                 except Exception as e:
                     print(f"hanlydb failed to process : {type(e).__name__} : {e} \n{traceback.format_exc().strip()}", file=sys.stderr)

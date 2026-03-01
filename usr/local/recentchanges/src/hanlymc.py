@@ -3,7 +3,6 @@ import os
 import sqlite3
 from datetime import datetime, timedelta
 from pathlib import Path
-from .pyfunctions import get_delete_patterns
 from .pyfunctions import is_valid_datetime
 from .pyfunctions import is_integer
 from .pyfunctions import matches_any_pattern
@@ -34,7 +33,7 @@ def stealth(filename, label, entry, current_size, original_size, cdiag):
                     entry["scr"].append(message)
 
 
-def hanly(parsed_chunk, checksum, cdiag, dbopt, ps, usr, logging_values, sys_tables, show_progress=False, strt=65, endp=90):
+def hanly(parsed_chunk, cachermPATTERNS, checksum, cdiag, dbopt, ps, usr, logging_values, sys_tables, show_progress=False, strt=65, endp=90):
 
     results = []
     sys_records = []
@@ -287,8 +286,8 @@ def hanly(parsed_chunk, checksum, cdiag, dbopt, ps, usr, logging_values, sys_tab
                             if is_sys:
                                 entry["scr"].append(f'{message} and is a system file.')
                             else:
-                                screen = get_delete_patterns(usr)
-                                if not matches_any_pattern(label, screen):
+                                screen = cachermPATTERNS
+                                if not matches_any_pattern(label, cachermPATTERNS):
                                     entry["scr"].append(message)
 
                 if entry["cerr"] or entry["flag"] or entry["scr"] or entry["sys"]:

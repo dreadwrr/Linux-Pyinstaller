@@ -3,14 +3,9 @@ import csv
 import importlib.util
 from collections import defaultdict
 from .configfunctions import find_install
-install_root = find_install()
-filter_patterns_path = install_root / "filter.py"
-spec = importlib.util.spec_from_file_location("user_filter", filter_patterns_path)
-user_filter = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(user_filter)
 
 
-def update_filter_csv(RECENT, csv_file, escaped_user):
+def update_filter_csv(RECENT, csv_file, escaped_user, user_filter):
 
     hits_dict = defaultdict(int)
 
@@ -26,11 +21,10 @@ def update_filter_csv(RECENT, csv_file, escaped_user):
         pass  # or create csv
         # filter
 
-    patterns = user_filter.get_exclude_patterns()
+    patterns = user_filter
 
     for pattern_literal in patterns:
-        # escaped_user = re.escape(user)
-        pattern = pattern_literal.replace("{user}", escaped_user)
+        pattern = pattern_literal.replace("{{user}}", escaped_user)
         regex = re.compile(pattern)
 
         count = sum(1 for line in RECENT if len(line) >= 2 and regex.search(line[1]))

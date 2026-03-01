@@ -9,18 +9,15 @@ from .gpgkeymanagement import import_key
 from .qtfunctions import load_konsole
 from .qtfunctions import load_file_manager
 from .qtfunctions import kill_process
+from .rntchanges import main as rntchanges_main
+# 02/28/2026
 
-# 02/25/2026
 
-
-def main(argv):
+def dispatch_internal(argv):
     if not argv:
         return False
     arglen = len(argv)
-    if arglen == 1:
-        print("Insufficient args")
-        return False
-    if arglen >= 2:
+    if arglen >= 3:
         script = argv[1].lower()
         args = argv[2:]
         if not args:
@@ -67,12 +64,11 @@ def main(argv):
                     sys.exit(entry(args))
                 elif script == "import":
                     sys.exit(entry(args))
-        else:
-            if script == "run":
+        elif script == "run":
                 if cmd == "filemanager":
                     sys.exit(load_file_manager(*args[1:]))
                 if cmd == "terminal":
                     sys.exit(load_konsole(*args[1:]))
                 if cmd == "kill":
                     sys.exit(kill_process(*args[1:]))
-    return False
+        sys.exit(rntchanges_main(argv))

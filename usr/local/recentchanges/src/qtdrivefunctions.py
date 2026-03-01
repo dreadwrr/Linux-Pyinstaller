@@ -4,11 +4,11 @@ import pyudev
 import sqlite3
 import subprocess
 from pathlib import Path
-from .configfunctions import get_json_settings
-from .configfunctions import dump_j_settings
-from .configfunctions import set_json_settings
-from .configfunctions import update_dict
-from .configfunctions import update_toml_values
+from .config import get_json_settings
+from .config import dump_j_settings
+from .config import set_json_settings
+from .config import update_dict
+from .config import update_toml_values
 from .gpgcrypto import decr
 from .gpgcrypto import encr
 from .pysql import table_exists

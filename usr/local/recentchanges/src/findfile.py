@@ -7,9 +7,9 @@ import threading
 import traceback
 import zipfile
 from collections import Counter
+from .config import load_toml
 from .configfunctions import find_install
 from .configfunctions import get_config
-from .configfunctions import load_toml
 from .findfileparser import build_parser
 from .pyfunctions import cprint
 from .pyfunctions import escf_py
@@ -70,7 +70,7 @@ def has_content(recent_files):
 
 # apply filter.py, filter out inclusions and decode any newline characters
 # windows would add " " quotes to the paths for 7zip winrar
-def encase_line(target_files, temp_dir, arch_exclude, USR, MODULENAME):
+def encase_line(target_files, temp_dir, arch_exclude, filter_patterns, USR, MODULENAME):
     results = []
     newline_char = False
 
@@ -80,7 +80,7 @@ def encase_line(target_files, temp_dir, arch_exclude, USR, MODULENAME):
     try:
         # apply filter.py
         escaped_user = re.escape(USR)
-        n_line = filter_lines_from_list(target_files, escaped_user, idx=0)
+        n_line = filter_lines_from_list(target_files, escaped_user, filter_patterns, idx=0)
 
         # target_out = archive + ".txt"
         # target_out = os.path.join(temp_dir, target_files)   # if using file archive
@@ -111,7 +111,7 @@ def encase_line(target_files, temp_dir, arch_exclude, USR, MODULENAME):
         return None, False
 
 
-def comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, USR, MODULENAME, zipPROGRAM, zipPATH, tarclvl, zipcmode, ziplevel, strip):
+def comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, filter_patterns, USR, MODULENAME, zipPROGRAM, zipPATH, tarclvl, zipcmode, ziplevel, strip):
 
     if zipPROGRAM == "zip":
         relative_flg = "-j"  # junk files  # original relative_flg = "-@"  a filee archive would miss files with newline character
@@ -134,7 +134,7 @@ def comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, USR, 
         print("Unrecognized zip program skipping archive.")
         return 1
 
-    xdata, newline_char = encase_line(target_files, temp_dir, arch_exclude, USR, MODULENAME)
+    xdata, newline_char = encase_line(target_files, temp_dir, arch_exclude, filter_patterns, USR, MODULENAME)
     if xdata is None:
         return 1
     elif not xdata:
@@ -443,7 +443,14 @@ def main(filename, extension, basedir, USR, dspEDITOR, dspPATH, temp_dir, cutoff
                 #
                 arch_exclude = get_runtime_exclude_list(USRDIR, MODULENAME, USR, str(file_out), flth, dbtarget, CACHE_F, CACHE_S, str(log_path), recent_files)  # dbopt=None, temp_dir=None
 
-                res = comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, USR, MODULENAME, zipPROGRAM, zipPATH, tarclvl, zipcmode, ziplevel, strip)
+                filter_path = localappdata / "filter.toml"
+                filter_list = load_toml(filter_path)
+                if filter_list:
+                    filter_patterns = filter_list.get("filter", [])  # _toml
+
+                    res = comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, filter_patterns, USR, MODULENAME, zipPROGRAM, zipPATH, tarclvl, zipcmode, ziplevel, strip)
+                else:
+                    print(f"{filter_path} missing couldnt make archive")
 
             elif downloads is not None and cutoffTIME is not None:
                 res = 1
