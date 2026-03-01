@@ -1,4 +1,4 @@
-# 02/25/2026              Qt gui linux                 Developer buddy 5.0
+# 02/28/2026              Qt gui linux                 Developer buddy 5.0
 import glob
 import logging
 import multiprocessing
@@ -9,24 +9,24 @@ import tempfile
 import traceback
 from pathlib import Path
 from PySide6.QtCore import Qt, Slot, Signal, QThread, QTimer, QSortFilterProxyModel, QSize
-from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap, QImage, QPalette, QColor
+from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon, QPixmap, QImage  # QPalette, QColor
 from PySide6.QtSql import QSqlQuery
 from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox, QMainWindow, QMenu, QHeaderView, QStyle
-
+from src.config import dump_j_settings
+from src.config import dump_toml
+from src.config import load_toml
+from src.config import update_dict
+from src.config import update_j_settings
+from src.config import update_toml_values
 from src.clearworker import ClearWorker
 from src.configfunctions import check_config
-from src.configfunctions import dump_j_settings
-from src.configfunctions import dump_toml
 from src.configfunctions import get_config
-from src.configfunctions import load_toml
-from src.configfunctions import update_dict
-from src.configfunctions import update_j_settings
-from src.configfunctions import update_toml_values
 from src.dbworkerstream import DbWorkerIncremental
 from src.gpgcrypto import decr
 from src.gpgcrypto import encr
 from src.gpgcrypto import parse_gpg_agent_conf
 from src.gpgcrypto import test_gpg_agent
+from src.gpgkeymanagement import clear_gpg
 from src.gpgkeymanagement import genkey
 from src.gpgkeymanagement import iskey
 from src.imageraster import raised_image
@@ -84,7 +84,7 @@ from src.qtfunctions import user_data_to_database
 from src.qtfunctions import valid_crest
 from src.qtfunctions import window_prompt
 from src.qtfunctions import window_message
-from src.qtparser import main as dispatch_main
+from src.qtparser import dispatch_internal
 from src.rntchangesfunctions import check_utility
 from src.rntchangesfunctions import cnc
 from src.rntchangesfunctions import display
@@ -110,7 +110,11 @@ class MainWindow(QMainWindow):
     reload_drives_sn = Signal(int, int, str)  # update drive combobox on complete
     reload_sj_sn = Signal(int, object, str, bool)  # also update drive combo on complete
 
-    def __init__(self, appdata_local, home_dir, xdg_runtime, pst_data, config, j_settings, toml_file, json_file, log_path, driveTYPE, distro_name, dbopt, dbtarget, CACHE_S, CACHE_S_str, systimeche, suffix, gpg_path, gnupg_home, dspEDITOR, dspPATH, popPATH, downloads, email, usr, uid, gid, tempdir):
+    def __init__(
+            self, appdata_local, home_dir, xdg_runtime, pst_data, config, j_settings, toml_file, json_file, log_path, 
+            driveTYPE, distro_name, dbopt, dbtarget, CACHE_S, CACHE_S_str, systimeche, suffix, gpg_path, gnupg_home, 
+            dspEDITOR, dspPATH, popPATH, downloads, email, usr, uid, gid, cachermPATTERNS, filterhitRESET, tempdir
+        ):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -135,6 +139,9 @@ class MainWindow(QMainWindow):
         self.usr = usr
         self.uid = uid
         self.gid = gid
+        # pyinstaller
+        self.cachermPATTERNS = cachermPATTERNS
+        self.filterhitRESET = filterhitRESET
         self.tempdir = tempdir  # thisapp
 
         self.config = None
@@ -177,7 +184,7 @@ class MainWindow(QMainWindow):
         # QTimer.singleShot(5000, self.display_db)
 
         # Vars
-        self.app_version = "5.0.3"
+        self.app_version = "5.0.4"
         self.PWD = os.getcwd()
         self.home_dir = home_dir
         config_local = home_dir / ".config" / "recentchanges"
@@ -189,7 +196,7 @@ class MainWindow(QMainWindow):
         self.resources = appdata_local / "Resources"
         self.user_resources = pst_data / "Resources"
         self.dispatch = appdata_local / "main"  # appdata_local / "set_recent_helper"
-        self.filter_file = appdata_local / "filter.py"
+        self.filter_file = appdata_local / "filter.toml"
         flth_frm = pst_data / "flth.csv"
         self.flth = str(flth_frm)
 
@@ -850,8 +857,8 @@ class MainWindow(QMainWindow):
                     new_dspPATH = updated_config['display']['dspPATH'].rstrip('/')
                     nogo = user_path(self.config['shield']['nogo'], self.usr)
                     new_nogo = user_path(updated_config['shield']['nogo'], self.usr)
-                    suppress_list = user_path(self.config['shield']['filterout'], self.usr)
-                    new_suppress_list = user_path(updated_config['shield']['filterout'], self.usr)
+                    filterout_list = user_path(self.config['shield']['filterout'], self.usr)
+                    new_filterout_list = user_path(updated_config['shield']['filterout'], self.usr)
 
                     ll_level = self.config['logs']['logLEVEL']
                     new_ll_level = updated_config['logs']['logLEVEL']
@@ -886,8 +893,8 @@ class MainWindow(QMainWindow):
                         self.downloads = updated_downloads
                         self.load_find_file_combo()
 
-                    if proteusPATH != self.proteusPATH or new_nogo != nogo or new_suppress_list != suppress_list:
-                        if not check_config(proteusPATH, new_nogo, new_suppress_list):
+                    if proteusPATH != self.proteusPATH or new_nogo != nogo or new_filterout_list != filterout_list:
+                        if not check_config(proteusPATH, new_nogo, new_filterout_list):
                             raise ConfigurationError
 
                     dspPATH = self.dspPATH
@@ -2477,6 +2484,7 @@ class MainWindow(QMainWindow):
         self.start_cleartrd()
         self.worker.status.connect(self.update_db_status)  # db label pg2
         self.worker.complete.connect(lambda code: self.reload_database_sn.emit(code, False, ("logs",)))  # db reload pg2
+        self.worker.set_cache(self.cachermPATTERNS, self.filterhitRESET)
         self._run_clear_task(self.worker.run_cacheclr, None)
 
     # fork clear IDX button
@@ -2701,8 +2709,10 @@ def start_main_window():
 
     pst_data = home_dir / ".local" / "share" / "recentchanges"
     dbtarget_frm = pst_data / "recent.gpg"
+    CACHE_F_frm = pst_data / "ctimecache.gpg"
     CACHE_S_frm = pst_data / "systimeche.gpg"
     dbtarget = str(dbtarget_frm)
+    CACHE_F = str(CACHE_F_frm)
     CACHE_S = str(CACHE_S_frm)
     CACHE_S_str = str(CACHE_S_frm)  # used for reference
 
@@ -2730,12 +2740,27 @@ def start_main_window():
     log_file = config['logs']['userLOG'] if usr != "root" else root_log_file
     proteuspaths = config['shield']['proteusPATH']
     nogo = user_path(config['shield']['nogo'], usr)
-    suppress_list = user_path(config['shield']['filterout'], usr)
+    filterout_list = user_path(config['shield']['filterout'], usr)
+
+
+    # pyinstaller filters
+    # for pyinstaller filter.py and pyfunctions exclude lists become filter.toml and ~/.local/config/recentchanges/config.toml
+    #
+    filters_toml = appdata_local / "filter.toml"
+    filters = load_toml(filters_toml)
+    if not filters:
+        return 1
+    filterhitRESET = filters.get("filterhitRESET", None)
+    cachermPATTERNS_toml = filters.get("cachermPATTERNS", None)
+    cachermPATTERNS = [
+        p.replace("{{user}}", usr)
+        for p in cachermPATTERNS_toml
+    ]
 
     # startup/initialize
 
     # check ps paths have to be relative. check certain paths exist. check the config file for mismatches.
-    if not check_config(proteuspaths, nogo, suppress_list) or not check_utility(zipPATH, downloads, popPATH):
+    if not check_config(proteuspaths, nogo, filterout_list) or not check_utility(zipPATH, downloads, popPATH):
         return 1
 
     os.makedirs(log_dir, mode=0o755, exist_ok=True)
@@ -2747,24 +2772,24 @@ def start_main_window():
         # tempfile perms are 700
         try:
             app = QApplication(sys.argv)
+            # Set default dark mode for consistent appearance
             # print("Available styles:", QtWidgets.QStyleFactory.keys())
-            app.setStyle("Fusion")
-            palette = QPalette()
-            # window background
-            palette.setColor(QPalette.ColorRole.Window, QColor(53, 53, 53))
-            palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 255, 255))
-            # text input
-            palette.setColor(QPalette.ColorRole.Base, QColor(42, 42, 42))
-            palette.setColor(QPalette.ColorRole.AlternateBase, QColor(66, 66, 66))
-            palette.setColor(QPalette.ColorRole.Button, QColor(53, 53, 53))
-            palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))
-            palette.setColor(QPalette.ColorRole.Highlight, QColor(185, 185, 185))
-            # palette.setColor(QPalette.ColorRole.HighlightedText, QColor(20, 20, 20))
-            palette.setColor(QPalette.ColorRole.Text, QColor(255, 255, 255))
-            palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(255, 255, 220))
-            palette.setColor(QPalette.ColorRole.ToolTipText, QColor(0, 0, 0))
-            app.setStyle("Fusion")
-            app.setPalette(palette)
+            # app.setStyle("Fusion")
+            # palette = QPalette()
+            # # window background
+            # palette.setColor(QPalette.ColorRole.Window, QColor(53, 53, 53))
+            # palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 255, 255))
+            # # text input
+            # palette.setColor(QPalette.ColorRole.Base, QColor(42, 42, 42))
+            # palette.setColor(QPalette.ColorRole.AlternateBase, QColor(66, 66, 66))
+            # palette.setColor(QPalette.ColorRole.Button, QColor(53, 53, 53))
+            # palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))
+            # palette.setColor(QPalette.ColorRole.Highlight, QColor(185, 185, 185))
+            # # palette.setColor(QPalette.ColorRole.HighlightedText, QColor(20, 20, 20))
+            # palette.setColor(QPalette.ColorRole.Text, QColor(255, 255, 255))
+            # palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(255, 255, 220))
+            # palette.setColor(QPalette.ColorRole.ToolTipText, QColor(0, 0, 0))
+            # app.setPalette(palette)
             gnupg_home = os.getenv("GNUPGHOME")
             if not gnupg_home:
                 gnupg_home = home_dir / ".gnupg"
@@ -2797,7 +2822,7 @@ def start_main_window():
 
                 pawd = dlg.get_password()
 
-                res = genkey(appdata_local, usr, email, email_name, tempdir, is_polkit, pawd)
+                res = genkey(appdata_local, usr, email, email_name, dbtarget, CACHE_F, CACHE_S, tempdir, is_polkit, pawd)
                 if res:
                     rlt = test_gpg_agent(email)
                     if rlt is None:
@@ -2814,6 +2839,7 @@ def start_main_window():
                             + "pinentry-gtk, pinentry-gtk-2, pinentry-gnome3 or pinentry-qt in .gnupg/gpg-agent.conf \n"
                         )
                         QMessageBox.warning(None, "curses", fstr)
+                    
                     print("Got password (hidden):", "*" * len(pawd) + "\n")
                 if key_error or not res:
                     QMessageBox.critical(None, "Error", "Failed to generate key")
@@ -2878,9 +2904,10 @@ def start_main_window():
             exit_code = 0
 
             window = MainWindow(
-                appdata_local, home_dir, xdg_runtime, pst_data, config, j_settings, toml_file, json_file, log_path, driveTYPE, distro_name, dbopt, dbtarget,
-                CACHE_S, CACHE_S_str, systimeche, suffix, gpg_path, gnupg_home, dspEDITOR, dspPATH, popPATH,
-                downloads, email, usr, uid, gid, tempdir
+                appdata_local, home_dir, xdg_runtime, pst_data, config, j_settings, toml_file, json_file, 
+                log_path, driveTYPE, distro_name, dbopt, dbtarget, CACHE_S, CACHE_S_str, systimeche, 
+                suffix, gpg_path, gnupg_home, dspEDITOR, dspPATH, popPATH, downloads, email, usr, uid, 
+                gid, cachermPATTERNS, filterhitRESET, tempdir
             )
             window.setWindowIcon(QIcon(icon_path))
             window.show()
@@ -2898,6 +2925,5 @@ def start_main_window():
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
-    if not dispatch_main(sys.argv):
+    if not dispatch_internal(sys.argv):
         sys.exit(start_main_window())
-    # sys.exit(start_main_window())

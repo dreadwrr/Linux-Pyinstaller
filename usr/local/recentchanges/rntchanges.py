@@ -20,10 +20,10 @@
 # argtwo - search time for `recentchanges search`
 # argf - inv flag from rnt symlink
 import sys
+from src.config import load_toml
 from src.configfunctions import find_install
 from src.configfunctions import get_config
 from src.configfunctions import get_user
-from src.configfunctions import load_toml
 from src.query import main as query_main
 from src.recentchangessearch import main as recentchanges_main
 
@@ -44,14 +44,14 @@ def main(argv):
     # original_user = os.environ.get('SUDO_USER')
 
     inv_flag = "inv" in argv
-    max_len = 7 if inv_flag else 6
+    max_len = 6 if inv_flag else 5
     arglen = len(argv)
     if arglen > max_len:
         if inv_flag:
-            print("Incorrect usage. max from rnt 7. provided: ", len(argv) - 1)
+            print("Incorrect usage. max from rnt 6. provided: ", len(argv) - 1)
         else:
-            print("Incorrect usage. max args 6. provided: ", len(argv) - 1)
-        print("Required <username> <PWD> <whoami>")
+            print("Incorrect usage. max args 5. provided: ", len(argv) - 1)
+        print("Required <username> <PWD>")
         print("please call from /usr/local/bin/recentchanges")
         return 1
     elif arglen < 3:
@@ -82,7 +82,7 @@ def main(argv):
 
     elif argone == "reset":
 
-        return query_main(appdata_local, home_dir, USR, email, reset="resetgpg")
+        return query_main(appdata_local, home_dir, USR, email, reset=True)
 
     if user_name == 'root':
 

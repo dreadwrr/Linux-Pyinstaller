@@ -1,0 +1,108 @@
+# Filter modified date: 02/26/2025       SN:049BN6KZ01
+#
+#   Notes: has porteus 5.01 and 5.1 built in
+#
+#	filter is regex
+#	any filtername with a . example randonmfile\\.txt
+#
+#	filterhitRESET is literal from this file from filter. copy items to reset to 0 on cache clear in flth.csv
+#
+#	cachermPATTERNS non-regex delete paths on cache clear. delete any that have these in it from database
+#
+#	Note: comments cant be on the same line as .toml wont parse
+# 
+#   [^\\\\]+ match up to next /Directory example: "/somedir/[^\\\\]+/Cachedir"
+#	.*? non greedily match up to and including first /Directory example: "/somedir/.*?/Cachedir"
+#
+
+filter = [
+
+        # Base var exclusions
+        "/var/cache",
+        "/var/run",
+        "/var/tmp",
+        "/var/lib/NetworkManager",
+        "/var/lib/upower",
+        "/var/log",
+
+        # Additional exclusions
+        "/usr/share/mime",
+        "/home/{{user}}/\\.Xauthority",
+        "/usr/share/glib-2\\.0/schemas",
+
+        "/usr/lib64/libXc",
+        "/usr/lib64/libudev",
+        "/var/db/sudo/lectured/1000",
+        "/home/{{user}}/\\.config",
+        "/home/{{user}}/\\.config/dolphinrc",
+        "/home/{{user}}/\\.config/konsolerc",
+        "/home/{{user}}/\\.config/featherpad/fp\\.conf",
+        "/\\.config/glib-2\\.0/settings/keyfile",
+
+        "\\.bash_history",
+        "\\.cache",
+        "\\.dbus",
+        "\\.gvfs",
+        "\\.gconf",
+        "\\.gnupg",
+        "\\.local/share",
+        "\\.local/state",
+        "\\.xsession",
+
+        # Inclusions from script
+        # "/usr/local/save-changesnew/ctimecache\\.gpg",
+        # "/usr/local/save-changesnew/recent\\.gpg",
+        # "/usr/local/recentchanges/flth\\.csv",
+
+        "/root/\\.auth",
+        "/root/\\.config",
+        "/root/\\.lesshst",
+        "/root/\\.xauth",
+
+        # Firefox-specific exclusions
+
+        "release/cookies\\.sqlite-wal",
+        "release/sessionstore-backups",
+        "release/aborted-session-ping",
+        "release/cache",
+        "release/datareporting",
+        "release/AlternateServices\\.bin"
+
+        # Chromium exclusions (uncomment if needed)
+        # r"ungoogled"
+
+        #    Now we get into the important directories. Do we exclude at the risk of deleting our program? Tread carefully
+
+        #    Very carefully select only starting /etc/    <------  We can remove this filter if needed
+
+
+        #    we dont want  /etc/
+        #"^/etc"  # Uncomment to exclude /etc
+]
+  
+	
+# for resetting filterhits CSV on database cache clear 
+# add literal here from items above to be reset to 0 in the flth.csv
+filterhitRESET = [
+	"/var/cache",
+	"\\.cache",
+	"/home/{{user}}/\\.config",
+	"/home/{{user}}/\\.Xauthority"
+]
+
+
+# cache clear delete patterns to delete from database
+# purposely avoid `cache` directely as too inclusive
+cachermPATTERNS = [
+    "%caches%",
+    "%cache2%",
+    "%Cache2%",
+    "%.cache%",
+    "%share/Trash%",
+    "%home/{{user}}/.local/state/wireplumber%",
+    "%root/.local/state/wireplumber%",
+    "%usr/share/mime/application%",
+    "%usr/share/mime/text%",
+    "%usr/share/mime/image%",
+    "%release/cache%",
+]
