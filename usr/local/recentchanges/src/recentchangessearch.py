@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#   Porteus                                                                           02/08/2026
+#   Porteus                                                                           03/03/2026
 #   recentchanges. Developer buddy      recentchanges and recentchanges search
 #   Provide ease of pattern finding ie what files to block we can do this a number of ways
 #   1) if a file was there (many as in more than a few) and another search lists them as deleted its either a sys file or not but unwanted nontheless
@@ -200,7 +200,6 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
         p.replace("{{user}}", escaped_user)
         for p in supbrwLIST_toml
     ]
-
 
     # make a named tuple or dict for args and to pass less args for clarity
     user_setting = {
@@ -433,7 +432,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
 
             RECENT, COMPLETE_1, RECENTNUL, end, cstart = find_files(
                 find_command_mmin, search_paths, "main", RECENT, COMPLETE_1, RECENTNUL, init, cfr,
-                search_start_dt, user_setting, logging_values, end, cstart, iqt=iqt, strt=proval, 
+                search_start_dt, user_setting, logging_values, end, cstart, iqt=iqt, strt=proval,
                 endp=endval, logger=logger
             )
 
@@ -448,7 +447,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
 
             tout, COMPLETE_2, RECENTNUL, end, cstart = find_files(
                 find_command_cmin, search_paths, "ctime", tout, COMPLETE_2, RECENTNUL, init, cfr,
-                search_start_dt, user_setting, logging_values, end, cstart, iqt=iqt, strt=proval, 
+                search_start_dt, user_setting, logging_values, end, cstart, iqt=iqt, strt=proval,
                 endp=endval, logger=logger
             )
 
@@ -466,7 +465,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
 
             RECENT, COMPLETE_1, RECENTNUL, end, cstart = find_files(
                 find_command_mmin, search_paths, "main", RECENT, COMPLETE_1, RECENTNUL, init, cfr,
-                search_start_dt, user_setting, logging_values, end, cstart, iqt=iqt, strt=proval, 
+                search_start_dt, user_setting, logging_values, end, cstart, iqt=iqt, strt=proval,
                 endp=endval, logger=logger
             )
 
@@ -475,11 +474,10 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
         # end Main search
 
         check_stop(stopf)
-        if RECENT:
-            if cfr:
+        if cfr and (RECENT or tout):
+            encr_cache(cfr, CACHE_F, USR, uid, gid, email, compLVL)
 
-                encr_cache(cfr, CACHE_F, USR, uid, gid, email, compLVL)
-        else:
+        if not RECENT:
             cprint.cyan("No new files found")
             if iqt:
                 print("Progress: 100.00%")
@@ -507,11 +505,11 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
         seen = {}
 
         for entry in merged:
-            if len(entry) < 11:
+            if len(entry) < 12:
                 continue
 
             filepath = entry[1]
-            cam_flag = entry[10]
+            cam_flag = entry[11]
 
             key = filepath
 
@@ -519,7 +517,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
                 seen[key] = entry
             else:
                 existing_entry = seen[key]
-                existing_cam = existing_entry[10]
+                existing_cam = existing_entry[11]
 
                 if existing_cam == "y" and cam_flag is None:
                     seen[key] = entry
@@ -568,7 +566,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
 
         filtered_lines = []
         for entry in SORTCOMPLETE:
-            if len(entry) >= 16:
+            if len(entry) >= 17:
                 ts_str = entry[0]
                 filepath = entry[16]
                 filtered_lines.append((ts_str, filepath))
@@ -704,7 +702,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
             if iqt:
                 print(f"Progress: {proval}", flush=True)
             # Backend
-            dbopt = pst_srg(
+            dbopt, csum = pst_srg(
                 dbopt, dbtarget, basedir, SORTCOMPLETE, COMPLETE, cachermPATTERNS, rout, scr, cerr, CACHE_S, user_setting, logging_values,
                 dcr=dcr, iqt=iqt, strt=proval, endp=endval
             )
@@ -716,6 +714,9 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
             if not dbopt:
                 print("There is a problem in pst_srg no return value. likely database wasnt created, path to database did not exist or permission issue")
                 return 1
+            if scanIDX and not os.path.isfile(dbopt):
+                print(f"dbopt missing from pstsrg. {dbopt} unable to scan profile")
+                scanIDX = False
             # if dbopt and dbopt != "encr_error":
             #     if os.path.isfile(dbtarget):
             #         change_perm(dbtarget, uid, gid, 0o644)
@@ -729,7 +730,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
                 print()
 
             # Diff output to user
-            csum = processha.processha(rout, ABSENT, diff_file, supbrwLIST, filter_toml, cerr, flsrh, argf, SRTTIME, escaped_user, suppress_browser, suppress)
+            processha.processha(rout, ABSENT, diff_file, supbrwLIST, filter_toml, cerr, flsrh, argf, SRTTIME, escaped_user, suppress_browser, suppress)
 
             # Filter hits
             update_filter_csv(RECENT, flth, escaped_user, filter_toml)
@@ -791,7 +792,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
         except Exception as e:
             print(f"Error in logic or display {type(e).__name__} : {e}")
 
-        if dbopt not in ("new_profile", "encr_error") and scanIDX:  # Scan system index. If it is from the command line and a new profile was just made dont scan it. Encryption failure dont scan as there is a problem.
+        if dbopt not in ("new_profile", "encr_error", "db_error") and scanIDX:  # Scan system index. If it is from the command line and a new profile was just made dont scan it. Encryption failure dont scan as there is a problem.
 
             cprint.green('Running POSTOP system index scan.')
 

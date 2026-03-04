@@ -4,7 +4,6 @@ from pathlib import Path
 
 # toml
 
-
 # def load_toml(conf_path):  #tomllib standard library. does not preserve commenting**
 #     if not conf_path.is_file():
 #         print("Unable to find config file:", conf_path)

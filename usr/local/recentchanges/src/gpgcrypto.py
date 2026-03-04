@@ -176,7 +176,9 @@ def start_user_agent(gpg_file, user=None):
     if stderr:
         for line in stderr.splitlines():
             if "no secret key" in line.lower():
+                print(line)
                 print(f"No key for {gpg_file} delete the file to reset")
+                return False
     return result.returncode == 0
 
 
@@ -271,7 +273,7 @@ def get_subkey_id(gpg_file):
 def gpg_can_decrypt(usr, dbtarget):
     if not os.path.isfile(dbtarget):
         return True
-    cmd = []
+    # cmd = []
     if usr != 'root':
         st = os.stat(dbtarget)
         is_owned_by_root = (st.st_uid == 0)

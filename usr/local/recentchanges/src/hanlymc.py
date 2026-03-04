@@ -3,6 +3,8 @@ import os
 import sqlite3
 from datetime import datetime, timedelta
 from pathlib import Path
+from .logs import emit_log
+from . import logs
 from .pyfunctions import is_valid_datetime
 from .pyfunctions import is_integer
 from .pyfunctions import matches_any_pattern
@@ -11,7 +13,7 @@ from .pyfunctions import parse_datetime
 from .pyfunctions import sys_record_flds
 from .pysql import get_recent_changes
 from .pysql import get_recent_sys
-# hybrid analysis 11/19/2025 01/08/2026 python version 02/20/2026 linux Qt
+# hybrid analysis 11/19/2025 01/08/2026 python version 03/03/2026 linux Qt
 
 
 def stealth(filename, label, entry, current_size, original_size, cdiag):
@@ -37,7 +39,7 @@ def hanly(parsed_chunk, cachermPATTERNS, checksum, cdiag, dbopt, ps, usr, loggin
 
     results = []
     sys_records = []
-    logs = []
+    log_entries = []
 
     fmt = "%Y-%m-%d %H:%M:%S"
     time_period = 5  # days for a file that isnt regularly updated. 5 default
@@ -50,9 +52,9 @@ def hanly(parsed_chunk, cachermPATTERNS, checksum, cdiag, dbopt, ps, usr, loggin
     with sqlite3.connect(dbopt) as conn:
         cur = conn.cursor()
 
-        r = 0
+        r = x = 0
         current_step = 0
-        delta_v = endp - strt
+
         steps = []
         if show_progress:
 
@@ -62,12 +64,14 @@ def hanly(parsed_chunk, cachermPATTERNS, checksum, cdiag, dbopt, ps, usr, loggin
             step_len = len(steps)
         for record in parsed_chunk:
             r += 1
+            x += 1
             if dbit:
                 if current_step < step_len and r >= steps[current_step]:
-                    prog_v = strt + round(delta_v * (steps[current_step] / total_e))
-                    print(f"Progress: {prog_v}%", flush=True)
+                    emit_log("prog", x, logs.WORKER_LOG_Q)
+                    x = 0
                     current_step += 1  # end progress
-
+                    # prog_v = strt + round(delta_v * (steps[current_step] / total_e))  # single core orig
+                    # print(f"Progress: {prog_v}%", flush=True)
             previous_timestamp = None
             recent_sym = None
             current_size = None
@@ -75,14 +79,14 @@ def hanly(parsed_chunk, cachermPATTERNS, checksum, cdiag, dbopt, ps, usr, loggin
             is_sys = False
 
             if len(record) < 17:
-                logs.append(("DEBUG", f"sortcomplete entry malformed.  less than required 17 : {record}"))
+                emit_log("DEBUG", f"sortcomplete entry malformed.  less than required 17 : {record}", logs.WORKER_LOG_Q, log_entries)
                 continue
 
             entry = {"cerr": [], "flag": [], "scr": [], "sys": [], "dcp": []}
 
             recent_timestamp = parse_datetime(record[0], fmt)
             if not recent_timestamp:
-                logs.append(("DEBUG", f"missing timestamp on parsed entry: {record}"))
+                emit_log("DEBUG", f"missing timestamp on parsed entry: {record}", logs.WORKER_LOG_Q, log_entries)
                 continue
 
             filename = record[1]
@@ -123,13 +127,13 @@ def hanly(parsed_chunk, cachermPATTERNS, checksum, cdiag, dbopt, ps, usr, loggin
                         insert_sys_entry(entry, record, recent_sys, sys_records)
 
                 else:
-                    logs.append(("ERROR", f"recent sys entry missing mtime skipping recent_sys: {recent_sys}"))
+                    emit_log("ERROR", f"recent sys entry missing mtime skipping recent_sys: {recent_sys}", logs.WORKER_LOG_Q, log_entries)
                     continue
             elif ps and recent_sys:
-                logs.append(("DEBUG", f"recent sys entry less than required length 14. recent_sys: {recent_sys}"))
+                emit_log("DEBUG", f"recent sys entry less than required length 14 : recent_sys: {recent_sys}", logs.WORKER_LOG_Q, log_entries)
 
             if previous is None or len(previous) < 13:
-                logs.append(("DEBUG", f"previous record less than required length 13. previous: {previous}"))
+                emit_log("DEBUG", f"previous record less than required length 14. previous: {previous}", logs.WORKER_LOG_Q, log_entries)
                 continue
             if checksum:
 
@@ -141,7 +145,7 @@ def hanly(parsed_chunk, cachermPATTERNS, checksum, cdiag, dbopt, ps, usr, loggin
                 if not record[5] or not previous[5]:
 
                     if current_size and current_size > 0:
-                        logs.append(("DEBUG", f"No checksum for file {record} \n recent {previous}"))
+                        emit_log("DEBUG", f"No checksum for file {record} \n recent {previous}", logs.WORKER_LOG_Q, log_entries)
                     continue
 
                 if not os.path.isfile(filename):
@@ -151,13 +155,13 @@ def hanly(parsed_chunk, cachermPATTERNS, checksum, cdiag, dbopt, ps, usr, loggin
 
                 if logging_values[1] == "DEBUG":
                     if current_size is None or original_size is None:
-                        logs.append(("DEBUG", f"invalid format detected size not an integer record: {record} and previous: {previous}"))
+                        emit_log("DEBUG", f"invalid format detected size not an integer record: {record} and previous: {previous}", logs.WORKER_LOG_Q, log_entries)
 
             if not is_sys:
                 previous_timestamp = parse_datetime(previous[0], fmt)
 
-            if (is_integer(record[3]) and is_integer(previous[3])  # format check
-                    and previous_timestamp):
+            if (is_integer(record[3]) and is_integer(previous[3])
+                    and previous_timestamp):  # format check
                 recent_cam = record[11]
                 previous_cam = previous[11]
                 cam_file = (recent_cam == "y" or previous_cam == "y")
@@ -287,7 +291,7 @@ def hanly(parsed_chunk, cachermPATTERNS, checksum, cdiag, dbopt, ps, usr, loggin
                                 entry["scr"].append(f'{message} and is a system file.')
                             else:
                                 screen = cachermPATTERNS
-                                if not matches_any_pattern(label, cachermPATTERNS):
+                                if not matches_any_pattern(label, screen):
                                     entry["scr"].append(message)
 
                 if entry["cerr"] or entry["flag"] or entry["scr"] or entry["sys"]:
@@ -295,11 +299,11 @@ def hanly(parsed_chunk, cachermPATTERNS, checksum, cdiag, dbopt, ps, usr, loggin
 
             else:
                 print("Hanly formatting problem was logged")
-                logs.append(("DEBUG", f"current inode {record[3]} previous {previous[3]}, current timestamp {recent_timestamp} previous {previous_timestamp}"))
-                logs.append(("DEBUG", f"original {previous} \n current {record}"))
+                emit_log("DEBUG", f"current inode {record[3]} previous {previous[3]}, current timestamp {recent_timestamp} previous {previous_timestamp} \n original {previous} \n current {record}", logs.WORKER_LOG_Q, log_entries)
 
         if dbit and current_step <= len(steps) - 1:
-            prog_v = round(delta_v) + strt
-            print(f"Progress: {prog_v}%", flush=True)
+            emit_log("prog", x, logs.WORKER_LOG_Q)
+            # prog_v = round(delta_v) + strt
+            # print(f"Progress: {prog_v}%", flush=True)
 
-    return results, sys_records, logs, csum
+    return results, sys_records, log_entries, csum

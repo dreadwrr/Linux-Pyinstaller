@@ -1,8 +1,6 @@
 import re
 import csv
-import importlib.util
 from collections import defaultdict
-from .configfunctions import find_install
 
 
 def update_filter_csv(RECENT, csv_file, escaped_user, user_filter):

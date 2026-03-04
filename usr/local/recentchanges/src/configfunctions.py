@@ -1,5 +1,4 @@
 import getpass
-import json
 import os
 import pwd
 import shutil
@@ -16,6 +15,39 @@ def find_install():
     return Path(__file__).resolve().parent.parent
 
 
+def not_absolute(user_path: str, quiet=False) -> bool:
+    p = Path(user_path)
+    if p.is_absolute():
+        if not quiet:
+            print("proteus_EXTN path cant be absolute: ", p)
+        # raise ValueError("Absolute paths not allowed")
+        return False
+    return True
+
+
+def check_config(paths, nogo, filterout):
+    for entry in paths + nogo + filterout:
+        if not not_absolute(entry):
+            return False
+    return True
+
+
+def get_user():
+    """ read from environ inaccurate """
+    user = None
+    try:
+        user = getpass.getuser()
+        #  user = pwd.getpwuid(os.geteuid()).pw_name
+    except (KeyError, OSError):
+        print("unable to get username attempting fallback")
+    if not user:
+        try:
+            user = Path.home().parts[-1]
+        except RuntimeError as e:
+            raise RuntimeError("unable to find current user.") from e
+    return user
+
+
 def user_info(user=None):
     try:
         if user:
@@ -30,7 +62,17 @@ def user_info(user=None):
         return USR, uid, gid, home_dir
     except (KeyError, OSError) as e:
         raise ValueError(f"unable to get info for {user if user else 'current user'}") from e
-    
+
+
+def get_default_user(path="/usr/local/bin/recentchanges"):
+    with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("default_user="):
+                value = line.split("=", 1)[1]
+                return value.strip().strip('"')
+    return None
+
 
 def ensure_default_utils():
     required = ["md5sum", "find"]
@@ -51,7 +93,7 @@ def ensure_default_utils():
 
     if "GNU findutils" not in out:
         raise RuntimeError("Unsupported `find` detected. GNU findutils is required.")
-    
+
 
 def get_xdg_runtime(uid):
     # uid_str = os.environ.get("PKEXEC_UID")
@@ -70,6 +112,9 @@ def get_xdg_runtime(uid):
         os.makedirs(xdg_runtime, mode=0o700, exist_ok=True)
     # print("runtime_dir", runtime_dir)
     return xdg_runtime
+
+
+# toml
 
 
 def get_config(appdata_local=None, user=None):
@@ -113,9 +158,15 @@ def get_config(appdata_local=None, user=None):
 
     if toml_missing and default_conf.is_file():
         shutil.copy(default_conf, toml_file)
+        if user != "root":
+            if os.path.isfile(toml_file):
+                os.chown(toml_file, uid, gid)
 
     if json_missing and default_json.is_file():
         shutil.copy(default_json, json_file)
+        if user != "root":
+            if os.path.isfile(json_file):
+                os.chown(json_file, uid, gid)
 
     if first_time_setup:
         ensure_default_utils()
@@ -124,49 +175,3 @@ def get_config(appdata_local=None, user=None):
     if toml_file.is_file():
         return toml_file, json_file, home_dir, xdg_config, xdg_runtime, user, uid, gid
     raise FileNotFoundError(f"Unable to find config.toml config file in {config_local}")
-
-
-def not_absolute(user_path: str, quiet=False) -> bool:
-    p = Path(user_path)
-    if p.is_absolute():
-        if not quiet:
-            print("proteus_EXTN path cant be absolute: ", p)
-        # raise ValueError("Absolute paths not allowed")
-        return False
-    return True
-
-
-def check_config(paths, nogo, filterout):
-    for entry in paths + nogo + filterout:
-        if not not_absolute(entry):
-            return False
-    return True
-
-
-def get_user():
-    """ read from environ inaccurate """
-    user = None
-    try:
-        user = getpass.getuser()
-        #  user = pwd.getpwuid(os.geteuid()).pw_name
-    except (KeyError, OSError):
-        print("unable to get username attempting fallback")
-    if not user:
-        try:
-            user = Path.home().parts[-1]
-        except RuntimeError as e:
-            raise RuntimeError("unable to find current user.") from e
-    return user
-
-
-def get_default_user(path="/usr/local/bin/recentchanges"):
-    with open(path, "r", encoding="utf-8", errors="ignore") as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("default_user="):
-                value = line.split("=", 1)[1]
-                return value.strip().strip('"')
-    return None
-
-
-

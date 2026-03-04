@@ -1,4 +1,4 @@
-# developer buddy v5.0 core                     02/28/2026
+# developer buddy v5.0 core                     03/03/2026
 import glob
 import logging
 import magic
@@ -11,8 +11,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 from .config import update_toml_values
-from .configfunctions import find_install
-from .fsearch import process_lines
+
+from .fsearchparallel import process_lines
 from .pyfunctions import cprint
 
 
@@ -764,7 +764,7 @@ def build_tsv(SORTCOMPLETE, TMPOPT, logf, rout, filter_toml, escaped_user, outpa
             ae = entry[4]
             creation_time = entry[2]
             cam = entry[11]
-            target = entry[12]
+            target = entry[12] if entry[12] else ""
 
             if fpath in copy_paths:
                 is_copy = "y"

@@ -65,10 +65,10 @@ def dispatch_internal(argv):
                 elif script == "import":
                     sys.exit(entry(args))
         elif script == "run":
-                if cmd == "filemanager":
-                    sys.exit(load_file_manager(*args[1:]))
-                if cmd == "terminal":
-                    sys.exit(load_konsole(*args[1:]))
-                if cmd == "kill":
-                    sys.exit(kill_process(*args[1:]))
+            if cmd == "filemanager":
+                sys.exit(load_file_manager(*args[1:]))
+            if cmd == "terminal":
+                sys.exit(load_konsole(*args[1:]))
+            if cmd == "kill":
+                sys.exit(kill_process(*args[1:]))
         sys.exit(rntchanges_main(argv))
