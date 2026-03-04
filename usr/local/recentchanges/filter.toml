@@ -30,6 +30,7 @@ filter = [
         "/home/{{user}}/\\.Xauthority",
         "/usr/share/glib-2\\.0/schemas",
 
+		# porteus exclusions
         "/usr/lib64/libXc",
         "/usr/lib64/libudev",
         "/var/db/sudo/lectured/1000",
@@ -79,15 +80,16 @@ filter = [
         #    we dont want  /etc/
         #"^/etc"  # Uncomment to exclude /etc
 ]
-  
-	
+
+
 # for resetting filterhits CSV on database cache clear 
 # add literal here from items above to be reset to 0 in the flth.csv
 filterhitRESET = [
 	"/var/cache",
-	"\\.cache",
 	"/home/{{user}}/\\.config",
-	"/home/{{user}}/\\.Xauthority"
+	"/home/{{user}}/\\.Xauthority",
+	"\\.cache",
+	"\\.local/share"
 ]
 
 
@@ -104,5 +106,5 @@ cachermPATTERNS = [
     "%usr/share/mime/application%",
     "%usr/share/mime/text%",
     "%usr/share/mime/image%",
-    "%release/cache%",
+    "%release/cache%"
 ]

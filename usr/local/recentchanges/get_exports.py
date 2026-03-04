@@ -61,7 +61,6 @@ def get_exports():
         "XDG_CONFIG_HOME": xdg_config,
         "XDG_RUNTIME_DIR": xdg_runtime
     }
-    # "lclhome": str(appdata_local),
     for name, value in export_a.items():
         if value is not None:
             print(f"export {name}={shlex.quote(str(value))}")

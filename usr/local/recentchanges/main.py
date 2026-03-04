@@ -26,7 +26,6 @@ from src.gpgcrypto import decr
 from src.gpgcrypto import encr
 from src.gpgcrypto import parse_gpg_agent_conf
 from src.gpgcrypto import test_gpg_agent
-from src.gpgkeymanagement import clear_gpg
 from src.gpgkeymanagement import genkey
 from src.gpgkeymanagement import iskey
 from src.imageraster import raised_image
@@ -111,10 +110,10 @@ class MainWindow(QMainWindow):
     reload_sj_sn = Signal(int, object, str, bool)  # also update drive combo on complete
 
     def __init__(
-            self, appdata_local, home_dir, xdg_runtime, pst_data, config, j_settings, toml_file, json_file, log_path, 
-            driveTYPE, distro_name, dbopt, dbtarget, CACHE_S, CACHE_S_str, systimeche, suffix, gpg_path, gnupg_home, 
+            self, appdata_local, home_dir, xdg_runtime, pst_data, config, j_settings, toml_file, json_file, log_path,
+            driveTYPE, distro_name, dbopt, dbtarget, CACHE_S, CACHE_S_str, systimeche, suffix, gpg_path, gnupg_home,
             dspEDITOR, dspPATH, popPATH, downloads, email, usr, uid, gid, cachermPATTERNS, filterhitRESET, tempdir
-        ):
+    ):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -184,7 +183,7 @@ class MainWindow(QMainWindow):
         # QTimer.singleShot(5000, self.display_db)
 
         # Vars
-        self.app_version = "5.0.4"
+        self.app_version = "5.0.5"
         self.PWD = os.getcwd()
         self.home_dir = home_dir
         config_local = home_dir / ".config" / "recentchanges"
@@ -2742,7 +2741,6 @@ def start_main_window():
     nogo = user_path(config['shield']['nogo'], usr)
     filterout_list = user_path(config['shield']['filterout'], usr)
 
-
     # pyinstaller filters
     # for pyinstaller filter.py and pyfunctions exclude lists become filter.toml and ~/.local/config/recentchanges/config.toml
     #
@@ -2839,7 +2837,7 @@ def start_main_window():
                             + "pinentry-gtk, pinentry-gtk-2, pinentry-gnome3 or pinentry-qt in .gnupg/gpg-agent.conf \n"
                         )
                         QMessageBox.warning(None, "curses", fstr)
-                    
+
                     print("Got password (hidden):", "*" * len(pawd) + "\n")
                 if key_error or not res:
                     QMessageBox.critical(None, "Error", "Failed to generate key")
@@ -2904,9 +2902,9 @@ def start_main_window():
             exit_code = 0
 
             window = MainWindow(
-                appdata_local, home_dir, xdg_runtime, pst_data, config, j_settings, toml_file, json_file, 
-                log_path, driveTYPE, distro_name, dbopt, dbtarget, CACHE_S, CACHE_S_str, systimeche, 
-                suffix, gpg_path, gnupg_home, dspEDITOR, dspPATH, popPATH, downloads, email, usr, uid, 
+                appdata_local, home_dir, xdg_runtime, pst_data, config, j_settings, toml_file, json_file,
+                log_path, driveTYPE, distro_name, dbopt, dbtarget, CACHE_S, CACHE_S_str, systimeche,
+                suffix, gpg_path, gnupg_home, dspEDITOR, dspPATH, popPATH, downloads, email, usr, uid,
                 gid, cachermPATTERNS, filterhitRESET, tempdir
             )
             window.setWindowIcon(QIcon(icon_path))

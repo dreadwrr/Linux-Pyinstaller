@@ -1,12 +1,19 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
-
-datas = []
+from pathlib import Path
+import PIL
+datas = [('Resources', 'Resources')]
 binaries = []
 hiddenimports = []
-tmp_ret = collect_all('libshiboken')
+tmp_ret = collect_all('PySide6')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-
+tmp_ret = collect_all('shiboken6')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+_pillow_libs_dir = Path(PIL.__file__).resolve().parent.parent / "pillow.libs"
+_pillow_lib_bins = []
+if _pillow_libs_dir.is_dir():
+	_pillow_lib_bins = [(str(p), "pillow.libs") for p in _pillow_libs_dir.glob("*.so*")]
+	binaries += _pillow_lib_bins
 
 a = Analysis(
     ['main.py'],
