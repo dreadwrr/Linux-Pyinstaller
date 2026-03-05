@@ -21,7 +21,6 @@ if there is an error about webengine add to main.spec <br>
 copy main and _internal from dist/main folder to /usr/local/recentchanges ./main <br>
 chown root:root main <br>
 chown root:root *.py <br>
-chown root:root -R scripts <br>
 chown root:root /usr/local/recentchanges <br>
 
 optionally remove src/ and main.py <br><br>
