@@ -1,10 +1,4 @@
 ## Pyinstaller Linux qt recentchanges <br><br>
-Added thread and queue for logging system and progress reporting. <br>
-Then after multiprocessing run logger process once streamlines execution <br>
-New hash collision method <br>
-Changes to gpg key creation and reset logic <br>
-Updated launcher script to use the binary for commandline. The <br>
-file filter which was filter.py in a toml file. filter.toml. <br><br>
 
 cd /usr/local/recentchanges <br>
 python -m venv .venv <br>
