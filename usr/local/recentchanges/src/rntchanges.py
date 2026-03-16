@@ -19,9 +19,12 @@
 # argone - the search time for `recentchanges` or the keyword search for `recentchanges search` or keyword query to get stats from database
 # argtwo - search time for `recentchanges search`
 # argf - inv flag from rnt symlink
+# flake8: noqa: E402
 import sys
-from .query import run_query
-from .recentchangessearch import main as recentchanges_main
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from src.query import main as query_main
+from src.recentchangessearch import main as recentchanges_main
 
 
 # Handle inv flag
@@ -57,8 +60,8 @@ def main(argv):
     THETIME = arge[1] or "noarguser"
 
     if argone == "query" or argone == "reset":
-
-        return run_query(USR, argone)
+        reset = argone == "reset"
+        return query_main(user=USR, reset=reset)
 
     elif argone == "search":  # recentchanges search
         return recentchanges_main(argone, THETIME, USR, PWD, argf, "")

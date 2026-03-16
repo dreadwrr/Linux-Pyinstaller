@@ -1,5 +1,7 @@
 # developer buddy v5.0 core                     03/03/2026
+import csv
 import glob
+import importlib.util
 import logging
 import magic
 import os
@@ -11,14 +13,38 @@ import time
 from datetime import datetime
 from pathlib import Path
 from .config import update_toml_values
-
+from .configfunctions import find_install
+from .fsearch import process_line
 from .fsearchparallel import process_lines
 from .pyfunctions import cprint
+from .pyfunctions import suppress_list
+install_root = find_install()
+filter_patterns_path = install_root / "filter.py"
+spec = importlib.util.spec_from_file_location("user_filter", filter_patterns_path)
+user_filter = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(user_filter)
+# Note: For database cacheclear / terminal supression see pyfunctions.py
 
 
-# file operations
+def reset_csvliteral(csv_file):
+
+    patterns_to_reset = user_filter._filterhitRESET
+    try:
+        with open(csv_file, newline='') as f:
+            reader = csv.reader(f)
+            rows = list(reader)
+        for row in rows[1:]:
+            if row[0] in patterns_to_reset:
+                row[1] = '0'
+        with open(csv_file, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(rows)
+    except (FileNotFoundError, PermissionError):
+        print(f"nfs permission error on {csv_file} reset_csvliteral.")
+        pass
 
 
+# return base filename or base filename a new extension
 def name_of(locale, ext=''):
     f_name = os.path.basename(locale)
     root, _ = os.path.splitext(f_name)
@@ -83,8 +109,12 @@ def check_installed_app(cmd_name):
 # inclusions from this script. temp_dir is the temp_dir for the qt app
 def get_runtime_exclude_list(USRDIR, MODULENAME, user, file_out, flth, dbtarget, CACHE_F, CACHE_S, log_path, dbopt=None, temp_dir=None):
 
-    # tmp_results = os.path.join("/tmp", MODULENAME)
-    download_results = os.path.join(USRDIR, MODULENAME)
+    # dir_pth = os.path.join("/tmp", f"{MODULENAME}_MDY_*")
+    # folders = glob.glob(dir_pth)
+    # old_searches = [os.path.join(fld, MODULENAME) for fld in folders]
+
+    # ad_results = os.path.join("/tmp", f'{MODULENAME}x')
+    download_results = os.path.join(USRDIR, f'{MODULENAME}x')
     gnupg_one = f"/home/{user}/.gnupg/random_seed"
     gnupg_two = "/root/.gnupg/random_seed"
 
@@ -99,17 +129,16 @@ def get_runtime_exclude_list(USRDIR, MODULENAME, user, file_out, flth, dbtarget,
         CACHE_S,
         log_path
     ]
+
+    # for entry in old_searches:
+    #     excluded_list.append(entry)
+
     if dbopt:
         excluded_list += [dbopt]
     if temp_dir:
         excluded_list += [temp_dir]
-    # dir_pth = os.path.join("/tmp", "MDY_*")
-    # folders = glob.glob(dir_pth)
-    # old_searches = [os.path.join(fld, MODULENAME) for fld in folders]
-    # for entry in old_searches:
-    #     excluded_list.append(entry)
 
-    return excluded_list
+    return [e.lower() for e in excluded_list if e]
 
 
 # Initialize check no compression
@@ -243,8 +272,8 @@ def is_excluded(web_list, file_line):
     return any(re.search(pat, file_line) for pat in web_list)
 
 
-def is_supressed(web_list, file_line, flag, suppress_browser, supress):
-    if flag or supress:
+def is_supressed(web_list, file_line, flag, suppress_browser, suppress):
+    if flag or suppress:
         return True
     if suppress_browser and web_list:
         return is_excluded(web_list, file_line)
@@ -252,16 +281,16 @@ def is_supressed(web_list, file_line, flag, suppress_browser, supress):
 
 
 # scr / cerr logic
-def filter_output(filepath, filtername, critical, pricolor, seccolor, typ, web_list, suppress_browser=True, supress=False):
-
+def filter_output(filepath, escaped_user, filtername, critical, pricolor, seccolor, typ, supbrwLIST, suppress_browser=True, suppress=False):
+    web_list = suppress_list(escaped_user, supbrwLIST)
     flag = False
-    with open(filepath, 'r') as f:
+    with open(filepath, 'r', encoding='utf-8') as f:
         for file_line in f:
 
             file_line = file_line.strip()
             if file_line.startswith(filtername):
 
-                if not is_supressed(web_list, file_line, flag, suppress_browser, supress):
+                if not is_supressed(web_list, file_line, flag, suppress_browser, suppress):
                     getattr(cprint, pricolor, lambda msg: print(msg))(f"{file_line} {typ}")
             else:
                 if critical != "no":
@@ -269,9 +298,8 @@ def filter_output(filepath, filtername, critical, pricolor, seccolor, typ, web_l
                         getattr(cprint, seccolor, lambda msg: print(msg))(f'{file_line} {typ} Critical')
                         flag = True
                 else:
-                    if not is_supressed(web_list, file_line, flag, suppress_browser, supress):
+                    if not is_supressed(web_list, file_line, flag, suppress_browser, suppress):
                         getattr(cprint, seccolor, lambda msg: print(msg))(f"{file_line} {typ}")
-    return flag
 
 
 def get_linux_distro():
@@ -367,7 +395,7 @@ def find_files(find_command, search_paths, file_type, RECENT, COMPLETE, RECENTNU
                 file_path = fields[10]
                 RECENTNUL += (file_path.encode() + b'\0')  # copy file list `recentchanges` null byte
                 if user_setting['FEEDBACK']:  # scrolling terminal look       alternative output
-                    print(fields[10])
+                    print(fields[10], flush=True)
 
             # escaped_entry = " ".join(fields)
             records.append(fields)
@@ -378,8 +406,7 @@ def find_files(find_command, search_paths, file_type, RECENT, COMPLETE, RECENTNU
     if init and user_setting['checksum']:
         cstart = time.time()
         cprint.cyan("Running checksum")
-    RECENT, COMPLETE = process_lines(records, file_type, search_start_dt, 'FSEARCH', user_setting, logging_values, cfr, iqt, strt, endp)
-
+    RECENT, COMPLETE = process_lines(process_line, records, file_type, search_start_dt, 'FSEARCH', user_setting, logging_values, cfr, iqt, strt, endp)
     return RECENT, COMPLETE, RECENTNUL, end, cstart
 
 
@@ -439,19 +466,16 @@ def clear_logs(USRDIR, DIRSRC, method, appdata_local, MODULENAME, archivesrh):
             "xDiffFromLast"
         ]
 
-        base_name = MODULENAME.lstrip("/")
-
         for suffix in suffixes:
-            # Build a glob pattern that matches files starting with base_name + suffix, plus anything after
-            pattern = os.path.join(USRDIR, f"{base_name}{suffix}*")
 
-            # Use glob to get all matching files
+            pattern = os.path.join(USRDIR, f"{MODULENAME}{suffix}*")
+
             for filepath in glob.glob(pattern):
                 try:
                     os.remove(filepath)
-                    # Optional: print(f"Removed {filepath}")
+
                 except FileNotFoundError:
-                    pass  # File already gone, continue
+                    pass
     return validrlt
 
 
@@ -472,9 +496,12 @@ def check_utility(zipPATH=None, downloads=None, popPATH=None):
     return res
 
 
-def filter_lines_from_list(lines, escaped_user, exclude_patterns, idx=1):
+def filter_lines_from_list(lines, escaped_user, idx=1):
+    if user_filter is None:
+        print("Error unable to load filter filter.py")
+        return None
 
-    regexes = [re.compile(p.replace("{{user}}", escaped_user)) for p in exclude_patterns]
+    regexes = [re.compile(p.replace("{{user}}", escaped_user)) for p in user_filter._filter]
 
     # filtered = [
     #     line for line in lines
@@ -486,7 +513,6 @@ def filter_lines_from_list(lines, escaped_user, exclude_patterns, idx=1):
             continue
         value = line[idx]
         if not value:
-            logging.debug("filter_lines_from_list line had no filepath line:%s", line)
             continue
 
         if not any(r.search(value) for r in regexes):
@@ -704,11 +730,11 @@ def tsv_sort_by(row, is_link=False):
 # time from the download or copy which could be from 2021 for example. Also by checking the database a copy
 # can also be detected by having the same checksum and a diffrent filename or inode. Sorted by above.
 #
-def build_tsv(SORTCOMPLETE, TMPOPT, logf, rout, filter_toml, escaped_user, outpath, method, fmt):
+def build_tsv(SORTCOMPLETE, TMPOPT, logf, rout, escaped_user, outpath, method, fmt):
 
     if method != "rnt":
         if logf is TMPOPT:
-            SORTCOMPLETE = filter_lines_from_list(SORTCOMPLETE, escaped_user, filter_toml)
+            SORTCOMPLETE = filter_lines_from_list(SORTCOMPLETE, escaped_user)
 
     tsv_files = []
     mtyp = is_copy = ""

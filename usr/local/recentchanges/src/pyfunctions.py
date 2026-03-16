@@ -1,5 +1,5 @@
-import csv
 import fnmatch
+import re
 import traceback
 from collections import defaultdict
 from datetime import datetime
@@ -7,22 +7,16 @@ from .configfunctions import not_absolute
 from .pysql import collision
 
 
-def reset_csvliteral(csv_file, filterhitRESET):
+def suppress_list(escaped_user, suppress_list):
+    compiled = [re.compile(re.escape(p)) for p in suppress_list]
+    return compiled
 
-    patterns_to_reset = filterhitRESET
-    try:
-        with open(csv_file, newline='') as f:
-            reader = csv.reader(f)
-            rows = list(reader)
-        for row in rows[1:]:
-            if row[0] in patterns_to_reset:
-                row[1] = '0'
-        with open(csv_file, 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerows(rows)
-    except (FileNotFoundError, PermissionError):
-        print(f"nfs permission error on {csv_file} reset_csvliteral.")
-        pass
+
+def cache_clear_patterns(usr, cachermPATTERNS):
+    return [
+        p.replace("{{user}}", usr)
+        for p in cachermPATTERNS
+    ]
 
 
 def user_path(settingName, theusr):

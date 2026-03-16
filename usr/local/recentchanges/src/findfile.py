@@ -19,7 +19,7 @@ from .rntchangesfunctions import filter_lines_from_list
 from .rntchangesfunctions import get_runtime_exclude_list
 from .rntchangesfunctions import removefile
 
-# 02/20/2026
+# 03/14/2026
 
 
 def archive_failure_blk(result, file_list):
@@ -70,7 +70,7 @@ def has_content(recent_files):
 
 # apply filter.py, filter out inclusions and decode any newline characters
 # windows would add " " quotes to the paths for 7zip winrar
-def encase_line(target_files, temp_dir, arch_exclude, filter_patterns, USR, MODULENAME):
+def encase_line(target_files, temp_dir, arch_exclude, USR, MODULENAME):
     results = []
     newline_char = False
 
@@ -78,31 +78,33 @@ def encase_line(target_files, temp_dir, arch_exclude, filter_patterns, USR, MODU
     search_files = f"*{MODULENAME}*.txt"
 
     try:
-        # apply filter.py
+
+        # apply user filter
+        rows = [(p,) for p in target_files]
+
         escaped_user = re.escape(USR)
-        n_line = filter_lines_from_list(target_files, escaped_user, filter_patterns, idx=0)
+        n_line = filter_lines_from_list(rows, escaped_user, idx=0)
+        if n_line is None:
+            return None
 
-        # target_out = archive + ".txt"
-        # target_out = os.path.join(temp_dir, target_files)   # if using file archive
-
-        # with open('/tmp/encoded', "w", encoding='utf-8') as f:
-
-        for line in n_line:
+        for row in n_line:
+            line = row[0]
+            if not line:
+                continue
 
             line_path = line.lower()
 
             # filter out inclusions from the app
-            if any(line_path.startswith(excl.lower()) for excl in arch_exclude):
+            if any(line_path.startswith(excl) for excl in arch_exclude):
                 continue
-            # filter out result files
+
             if fnmatch.fnmatch(line, search_files):
                 continue
-            # encased_line = f'"{line}"'
+
             if '\\\\n' in line:
                 newline_char = True
             encased_line = unescf_py(line)
 
-            # f.write(encased_line + "\n")
             results.append(encased_line)
 
         return (results, newline_char)
@@ -111,30 +113,44 @@ def encase_line(target_files, temp_dir, arch_exclude, filter_patterns, USR, MODU
         return None, False
 
 
-def comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, filter_patterns, USR, MODULENAME, zipPROGRAM, zipPATH, tarclvl, zipcmode, ziplevel, strip):
+def comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, USR, MODULENAME, zipPROGRAM, zipPATH, tarcmode, tarclevel, zipcmode, ziplevel, strip):
 
+    archflnm = archive + ".zip"
     if zipPROGRAM == "zip":
         relative_flg = "-j"  # junk files  # original relative_flg = "-@"  a filee archive would miss files with newline character
-        archflnm = archive + ".zip"
-
     elif zipPROGRAM == "tar":
-        if tarclvl == "tar":
+        tar_filter = None
+        prog = None
+        if tarcmode == "tar":
             relative_flg = "-cf"
-        elif tarclvl == "gz":
+        elif tarcmode == "gz":
             relative_flg = "-czf"
-        elif tarclvl == "bz2":
+            prog = "gzip"
+        elif tarcmode == "bz2":
             relative_flg = "-cjf"
-        elif tarclvl == "xz":
+            prog = "bzip2"
+        elif tarcmode == "xz":
             relative_flg = "-cJf"
-        elif tarclvl == "zstd":
+            prog = tarcmode
+        elif tarcmode == "zstd":
             relative_flg = "-cf"
-        suffix = '.tar' if tarclvl == "tar" else f'.tar.{tarclvl}'
+            prog = tarcmode
+        if tarclevel and tarcmode != "tar":
+            relative_flg = "-cf"
+            if tarcmode == "zstd":
+                if tarclevel > 22:
+                    tarclevel = 22
+            else:
+                if tarclevel > 9:
+                    tarclevel = 9
+            tar_filter = f"{prog} -{tarclevel}"
+        suffix = '.tar' if tarcmode == "tar" else f'.tar.{tarcmode}'
         archflnm = archive + suffix
-    else:
+    elif zipPROGRAM != "zipfile":
         print("Unrecognized zip program skipping archive.")
         return 1
 
-    xdata, newline_char = encase_line(target_files, temp_dir, arch_exclude, filter_patterns, USR, MODULENAME)
+    xdata, newline_char = encase_line(target_files, temp_dir, arch_exclude, USR, MODULENAME)
     if xdata is None:
         return 1
     elif not xdata:
@@ -165,7 +181,10 @@ def comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, filte
                 duplicates.append(filepath)
                 complete[filepath] = filepath
 
-        if zipPROGRAM == "zip" and (len(xdata) > 50 or newline_char or strip):
+        if (
+            zipPROGRAM == "zipfile" or
+            (zipPROGRAM == "zip" and (len(xdata) > 50 or newline_char or strip))
+        ):
             print("using zipfile")
             zip_(complete, zipcmode, ziplevel, strip, zip_name=out_file)
             res = 0
@@ -180,6 +199,8 @@ def comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, filte
                     cmd += [relative_flg]
                 cmd += [f"-{zipcmode}", out_file] + uniques
                 data = None
+                print('Running command:', ' '.join(cmd), flush=True)
+                print()
                 result = subprocess.run(
                     cmd,
                     input=data,
@@ -196,17 +217,25 @@ def comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, filte
             elif zipPROGRAM == "tar":
 
                 # write only duplicates to qt temp dir this way to avoid exceeding memory size if the data  is too great
+                #
+                #
+                #
+
                 archflnm_two = archive + "_duplicate" + suffix
                 out_two = os.path.join(downloads, archflnm_two)
 
                 if strip and duplicates:
                     removefile(out_two)
                     cm_dupes = cmd.copy()
-                    if tarclvl == "zstd":
+                    if tarcmode == "zstd" and not tarclevel:
                         cm_dupes += ["--zstd"]
+                    if tar_filter:
+                        cm_dupes += ["-I", tar_filter]
                     cm_dupes += [relative_flg, out_two, "--null", "-T", "-"]
                     data = b"\0".join(f.encode() for f in duplicates) + b"\0"
 
+                    print('Running command:', ' '.join(cm_dupes), flush=True)
+                    print()
                     result = subprocess.run(
                         cm_dupes,
                         input=data,
@@ -224,9 +253,10 @@ def comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, filte
                     if res != 0:
                         removefile(out_two)
                     res = 1
-                    if tarclvl == "zstd":
+                    if tarcmode == "zstd":
                         cmd += ["--zstd"]
-
+                    if tar_filter:
+                        cm_dupes += ["-I", tar_filter]
                     cmd += ["--ignore-failed-read"]
 
                     if strip:
@@ -240,6 +270,9 @@ def comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, filte
                     else:
                         file_list = uniques
                         data = b"\0".join(f.encode() for f in uniques) + b"\0"
+
+                    print('Running command:', ' '.join(cmd), flush=True)
+                    print()
                     result = subprocess.run(
                         cmd,
                         input=data,
@@ -273,13 +306,14 @@ def main(filename, extension, basedir, USR, dspEDITOR, dspPATH, temp_dir, cutoff
     localappdata = find_install()
     log_path = localappdata / "logs" / "errs.log"
 
-    toml, json_file, home_dir, xdg_config, xdg_runtime, USR, uid, gid = get_config(localappdata, USR)
+    toml, json_file, home_dir, xdg_config, xdg_runtime, USR, uid, gid = get_config(localappdata, USR, platform="Linux")
     config = load_toml(toml)
     if not config:
         return 1
     EXCLDIRS = user_path(config['search']['EXCLDIRS'], USR)
     MODULENAME = config['paths']['MODULENAME']
-    tarclvl = config['compress']['tarclvl']
+    tarcmode = config['compress']['tarcmode']
+    tarclevel = config['compress']['tarclevel']
     zipcmode = config['compress']['zipcmode']
     ziplevel = config['compress']['ziplevel']
     strip = config['compress']['strip']
@@ -345,7 +379,7 @@ def main(filename, extension, basedir, USR, dspEDITOR, dspPATH, temp_dir, cutoff
         y = len(base_folder_paths)
         is_progress = y > 0
 
-        print('Running command:', ' '.join(find_command))
+        print('Running command:', ' '.join(find_command), flush=True)
         print()
 
         stderr_thread = None
@@ -367,6 +401,7 @@ def main(filename, extension, basedir, USR, dspEDITOR, dspPATH, temp_dir, cutoff
 
         buffer = b''
 
+        emitted = set()
         with open(recent_files, "w", encoding="utf-8") as f1:
             while True:
                 if proc.stdout is None:
@@ -383,23 +418,24 @@ def main(filename, extension, basedir, USR, dspEDITOR, dspPATH, temp_dir, cutoff
                         if otline:
                             for i, prefix in enumerate(base_folder_paths, start=1):
                                 if otline.startswith(prefix):
-                                    if is_progress:
+                                    if is_progress and i not in emitted:
                                         print(f"Progress: {round((i / y) * 100, 2)}", flush=True)
-                                        break
+                                        emitted.add(i)
+                                    break
 
                             if not (result_inclusion and otline == recent_files):
 
                                 if downloads is not None:
                                     cline = escf_py(otline.rstrip('\n'))
                                     target_files.append(cline)
-                                print(otline)
                                 f1.write(otline + '\n')
+                                print(otline, flush=True)
 
             if buffer.strip():
                 try:
                     otline = buffer.decode('utf-8', errors='replace')
                     if os.path.isfile(otline):
-                        if cutoffTIME is not None:
+                        if downloads is not None:
                             cline = escf_py(otline.rstrip('\n'))
                             target_files.append(cline)
                         print(otline)
@@ -439,22 +475,20 @@ def main(filename, extension, basedir, USR, dspEDITOR, dspPATH, temp_dir, cutoff
                 CACHE_S, _ = os.path.splitext(CACHE_S)  # to match all profiles and index drives
 
                 # exclude certain files from .rar/.zip. app inclusions and temp work area
-                #
-                #
-                arch_exclude = get_runtime_exclude_list(USRDIR, MODULENAME, USR, str(file_out), flth, dbtarget, CACHE_F, CACHE_S, str(log_path), recent_files)  # dbopt=None, temp_dir=None
 
-                filter_path = localappdata / "filter.toml"
-                filter_list = load_toml(filter_path)
-                if filter_list:
-                    filter_patterns = filter_list.get("filter", [])  # _toml
+                arch_exclude = get_runtime_exclude_list(
+                    USRDIR, MODULENAME, USR, str(file_out), flth, dbtarget,
+                    CACHE_F,  CACHE_S, str(log_path), recent_files)
 
-                    res = comp_archive(target_files, archive, temp_dir, downloads, arch_exclude, filter_patterns, USR, MODULENAME, zipPROGRAM, zipPATH, tarclvl, zipcmode, ziplevel, strip)
-                else:
-                    print(f"{filter_path} missing couldnt make archive")
+                res = comp_archive(
+                    target_files, archive, temp_dir, downloads, arch_exclude, USR,
+                    MODULENAME, zipPROGRAM, zipPATH, tarcmode, tarclevel,
+                    zipcmode, ziplevel, strip
+                )
 
-            elif downloads is not None and cutoffTIME is not None:
+            elif downloads and cutoffTIME is not None:
                 res = 1
-                print("no archive path list: target_files. couldnt compress")
+                print(f"no archive path list: {target_files} couldnt compress")
 
             print(f"RESULT: {recent_files}")
 

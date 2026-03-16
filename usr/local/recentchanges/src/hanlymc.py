@@ -35,7 +35,7 @@ def stealth(filename, label, entry, current_size, original_size, cdiag):
                     entry["scr"].append(message)
 
 
-def hanly(parsed_chunk, cachermPATTERNS, checksum, cdiag, dbopt, ps, usr, logging_values, sys_tables, show_progress=False, strt=65, endp=90):
+def hanly(parsed_chunk, checksum, cdiag, dbopt, ps, usr, logging_values, sys_tables, cachermPATTERNS, show_progress=False, strt=65, endp=90):
 
     results = []
     sys_records = []

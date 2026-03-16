@@ -5,7 +5,6 @@ import traceback
 from PySide6.QtCore import Signal
 from .gpgcrypto import encr
 from .gpgcrypto import start_gpg_agent
-from .pyfunctions import reset_csvliteral
 from .pysql import clear_conn
 from .pysql import clear_sys_profile
 from .query import main as query_main
@@ -14,8 +13,9 @@ from .qtfunctions import clear_cache
 from .query import blank_count
 from .rntchangesfunctions import cnc
 from .rntchangesfunctions import removefile
+from .rntchangesfunctions import reset_csvliteral
 # import io
-# 02/21/2026
+# 03/14/2026
 
 
 # QObject
@@ -48,9 +48,8 @@ class ClearWorker(Worker):
         self.cache_table = cache_table
         self.systimeche = systimeche
 
-    def set_cache(self, cachermPATTERNS, filterhitRESET):
+    def set_cache(self, cachermPATTERNS):
         self.cachermPATTERNS = cachermPATTERNS
-        self.filterhitRESET = filterhitRESET
 
     def on_timeout(self):
         self.log.emit("Please enter passphrase in terminal")
@@ -91,25 +90,21 @@ class ClearWorker(Worker):
 
                         if action == "cache":
 
-                            filter_literal = self.filterhitRESET
-                            cache_patterns = self.cachermPATTERNS
-
-                            if filter_literal is not None and cache_patterns is not None:
-                                if clear_cache(conn, cur, cache_patterns, log_fn=self.log.emit):
-                                    rlt = 0
-                                    try:
-                                        reset_csvliteral(self.flth, filter_literal)
-                                        self.status.emit("Cache cleared")
-                                        self.log.emit("Filter hits cleared.")
-                                        x = blank_count(cur)
-                                        if x % 5 == 0:
-                                            self.log.emit(f"for resetting filter hits see top of {self.flth}")
-                                    except Exception as e:
-                                        cm = f'Failed to clear csv: {self.flth} {type(e).__name__} {e}'
-                                        self.status.emit(cm)
-                                        self.log.emit(cm)
-                                else:
-                                    self.status.emit("Cache clear failed")
+                            if clear_cache(conn, cur, self.cachermPATTERNS, log_fn=self.log.emit):
+                                rlt = 0
+                                try:
+                                    reset_csvliteral(self.flth)
+                                    self.status.emit("Cache cleared")
+                                    self.log.emit("Filter hits cleared.")
+                                    x = blank_count(cur)
+                                    if x % 5 == 0:
+                                        self.log.emit(f"for resetting filter hits see top of {self.flth}")
+                                except Exception as e:
+                                    cm = f'Failed to clear csv: {self.flth} {type(e).__name__} {e}'
+                                    self.status.emit(cm)
+                                    self.log.emit(cm)
+                            else:
+                                self.status.emit("Cache clear failed")
 
                         elif action == "sys":
 

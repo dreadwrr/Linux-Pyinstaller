@@ -13,7 +13,7 @@ from pathlib import Path
 from PySide6.QtCore import QDateTime
 from PySide6.QtGui import QIcon, QFontDatabase, QImage
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
-from PySide6.QtWidgets import QVBoxLayout, QDialog, QPushButton, QLabel, QInputDialog, QMessageBox, QHBoxLayout  # QComboBox
+from PySide6.QtWidgets import QVBoxLayout, QDialog, QPushButton, QLabel, QInputDialog, QMessageBox, QHBoxLayout
 from .dbmexec import DBConnectionError
 from .dbmexec import DBMexec
 from .gpgcrypto import decr
@@ -21,7 +21,7 @@ from .gpgcrypto import decrypt_from_text
 from .gpgcrypto import encr
 from .gpgcrypto import encrypt_to_text
 from .pyfunctions import is_integer
-# 02/18/2026
+# 03/14/2026
 
 
 def polkit_check(action_id="org.freedesktop.set_recent_helper"):
@@ -335,11 +335,12 @@ def commit_note(logger, notes, email, query):
 # end QSql
 
 
-def clear_cache(conn, cur, cache_patterns, log_fn=print):
+def clear_cache(conn, cur, cachermPATTERNS, log_fn=print):
 
+    files_d = cachermPATTERNS
     filename_pattern = None
     try:
-        for filename_pattern in cache_patterns:
+        for filename_pattern in files_d:
             cur.execute("DELETE FROM logs WHERE filename LIKE ?", (filename_pattern,))
             cur.execute("DELETE FROM stats WHERE filename LIKE ?", (filename_pattern,))
         if filename_pattern is not None:
@@ -386,7 +387,7 @@ def open_html_resource(parent, lclhome):
     # return win
 
 
-def show_cmddoc(cmddoc, lclhome, gpg_path, gnupg_home, email, example_gpg, hudt):
+def show_cmddoc(cmddoc, lclhome, pst_data, gpg_path, gnupg_home, email, example_gpg, hudt):
 
     hudt.clear()
     fingerprint = None
@@ -438,7 +439,7 @@ def show_cmddoc(cmddoc, lclhome, gpg_path, gnupg_home, email, example_gpg, hudt)
     hudt("\n")
     hudt("decrypt something (example check a cache file) from app directory")
     hudt(
-        f"{gpg_command} -o myfile.txt --decrypt {example_gpg}.gpg"
+        f"{gpg_command} -o myfile.txt --decrypt {pst_data}/{example_gpg}.gpg"
     )
     # end gpg info
 
@@ -527,7 +528,7 @@ def help_about(lclhome, hudt):
     # layout.setSpacing(15)
     # layout.setContentsMargins(20, 20, 20, 20)
 
-    label = QLabel("v5.0.5\n\nCreated by Colby Saigeon\nh&k enterprisez\n\nFind recent files using powershell.")
+    label = QLabel("v5.0\n\nCreated by Colby Saigeon\nh&k enterprisez\n\nFind recent files using powershell.")
     # label.setWordWrap(True)
     layout.addWidget(label)
 

@@ -19,7 +19,7 @@ def parse_rout(line):
 
 
 # preprocess diff file
-def isdiff(RECENT, ABSENT, rout, diff_file, difff_file, flsrh, parsed_PRD, fmt):
+def isdiff(RECENT, ABSENT, rout, diffnm, difff_file, flsrh, parsed_PRD, fmt):
 
     ranged = []
 
@@ -42,7 +42,7 @@ def isdiff(RECENT, ABSENT, rout, diff_file, difff_file, flsrh, parsed_PRD, fmt):
     if ranged:
         d_paths = set(entry[1] for entry in RECENT)
 
-        with open(diff_file, 'a') as file2:
+        with open(diffnm, 'a') as file2:
             for line in ranged:
                 parts = line.strip().split(None, 2)
                 if len(parts) < 3:
@@ -71,12 +71,12 @@ def isdiff(RECENT, ABSENT, rout, diff_file, difff_file, flsrh, parsed_PRD, fmt):
                         line = line.replace("Deleted", "Deleted ", 1)
                     file2.write(line + '\n')
     else:
-        with open(diff_file, 'a') as file2:
+        with open(diffnm, 'a') as file2:
             print('None of above is applicable to search. It is the previous search', file=file2)
 
 
 # post ha to diff file
-def processha(rout, ABSENT, diff_file, supbrwLIST, filter_escaped, cerr, flsrh, argf, parsed_PRD, escaped_user, supbrwr, supress):
+def processha(rout, ABSENT, diffnm, cerr, flsrh, argf, parsed_PRD, escaped_user, supbrwLIST, suppress_browser, suppress):
 
     def get_last_part(line):
         parts = line.strip().split(None, 3)
@@ -109,7 +109,7 @@ def processha(rout, ABSENT, diff_file, supbrwLIST, filter_escaped, cerr, flsrh, 
 
         if flsrh or argf == "filtered":
             if not (flsrh and argf == "filtered"):
-                DIFFMATCHED = filter_lines_from_list(DIFFMATCHED, escaped_user, filter_escaped, 2)
+                DIFFMATCHED = filter_lines_from_list(DIFFMATCHED, escaped_user, 2)
 
         if flsrh:
             DIFFMATCHED = [
@@ -131,9 +131,9 @@ def processha(rout, ABSENT, diff_file, supbrwLIST, filter_escaped, cerr, flsrh, 
             outline.append(formatted_line)
 
     if outline:
-        with open(diff_file, 'a') as f:
+        with open(diffnm, 'a') as f:
             f.write('\nHybrid analysis\n\n')
             f.writelines(outline)
 
     if os.path.exists(cerr):
-        filter_output(cerr, 'Warning', 'Suspect', 'yellow', 'red', 'elevated', supbrwLIST, supbrwr, supress)
+        filter_output(cerr, escaped_user, 'Warning', 'Suspect', 'yellow', 'red', 'elevated', supbrwLIST, suppress_browser, suppress)
