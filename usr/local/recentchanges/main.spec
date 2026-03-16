@@ -15,6 +15,8 @@ if _pillow_libs_dir.is_dir():
 	_pillow_lib_bins = [(str(p), "pillow.libs") for p in _pillow_libs_dir.glob("*.so*")]
 	binaries += _pillow_lib_bins
 
+
+
 a = Analysis(
     ['main.py'],
     pathex=[],
