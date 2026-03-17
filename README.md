@@ -1,5 +1,7 @@
 ## Pyinstaller Linux qt recentchanges <br><br>
 
+first fix the bug on ln2821 and 2822 in main.py. it should be uncommented. <br><br>
+
 cd /usr/local/recentchanges <br>
 python -m venv .venv <br>
 source .venv/bin/activate <br>
