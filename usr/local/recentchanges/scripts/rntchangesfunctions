@@ -118,6 +118,7 @@ EOF
 }
 
 setup_exports() {
+	export CMD_LINE="1"
 	[[ "$1" = "query" ]] && { "$app_install"/main "$USR" "$PWD" query ; exit ; }
 	[[ "$1" = "reset" ]] && { "$app_install"/main "$USR" "$PWD" reset ; exit ; }
 	output=$( python3 "$app_install"/src/get_exports.py $USR) ; res=$?
