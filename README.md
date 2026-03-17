@@ -24,3 +24,5 @@ chown root:root *.py <br>
 chown root:root /usr/local/recentchanges <br>
 
 optionally remove src/ and main.py <br><br>
+
+![Alt text](https://i.imgur.com/xK10DuX.png) <br><br>
