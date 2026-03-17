@@ -25,4 +25,5 @@ chown root:root /usr/local/recentchanges <br>
 
 optionally remove src/ and main.py <br><br>
 
-![Alt text](https://i.imgur.com/xK10DuX.png) ![Alt text](https://i.imgur.com/3dXwKzW.png)<br><br>
+![Alt text](https://i.imgur.com/xK10DuX.png) <br>
+![Alt text](https://i.imgur.com/3dXwKzW.png)<br><br>
