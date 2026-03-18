@@ -1,5 +1,5 @@
 ## Pyinstaller Linux qt recentchanges <br><br>
-
+commited the following fix and will make the release in about a week to make sure any changes are vetted <br>
 first fix the bug on ln2821 and 2822 in main.py. it should be uncommented <br><br>
 
 cd /usr/local/recentchanges <br>
