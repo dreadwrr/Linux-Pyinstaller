@@ -270,6 +270,7 @@ proteusEXTN = [
     ".sqlite3", ".mdb", ".desktop", ".service", ".socket", ".timer", ".mount", ".target",
     ".path", ".slice", ".gpg"
 ]
+
 # hash all in the following 
 proteusPATH = [
 	"etc/cron.d",
