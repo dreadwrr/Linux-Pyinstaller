@@ -1,4 +1,4 @@
-# 03/17/2026              Qt gui linux                 Developer buddy 5.0.7
+# 03/23/2026              Qt gui linux                 Developer buddy 5.0.7
 import glob
 import logging
 import multiprocessing
@@ -161,6 +161,7 @@ class MainWindow(QMainWindow):
         self.xzm = config['shield']['xzm']
         self.is_xzm_profile = self.xzm if self.suffix == "/" else False
         self.EXCLDIRS = user_path(config['search']['EXCLDIRS'], usr)
+        self.xRC = config['search']['xRC']
         zipPROGRAM = config['compress']['zipPROGRAM']
         self.zipPROGRAM = zipPROGRAM.lower()
         self.zipPATH = config['compress']['zipPATH']
@@ -385,7 +386,7 @@ class MainWindow(QMainWindow):
 
         self.ui.actionExit.triggered.connect(QApplication.quit)
         self.ui.actionClear_extensions.triggered.connect(self.clear_extensions)
-        self.ui.actionUpdates.triggered.connect(lambda: check_for_updates(self.app_version, "dreadwrr", "Recentchanges", self))
+        self.ui.actionUpdates.triggered.connect(lambda: check_for_updates(self.app_version, "dreadwrr", "Recentchanges-Linux", self))
 
         self.ui.actionCommands_2.triggered.connect(lambda: show_cmddoc(self.command_file, self.lclhome, self.pst_data, self.gpg_path, self.gnupg_home, self.email, self.systimeche, self.ui.hudt))
         self.ui.actionQuick1.triggered.connect(lambda: display(self.dspEDITOR, self.command_file, True, self.dspPATH))
@@ -504,6 +505,9 @@ class MainWindow(QMainWindow):
         self.reload_database(0, is_remove=True, tables=('logs',))  # sort the dbcomb
 
         self.basedirs.set_current_index(index)
+        self.ui.sbasediridx.blockSignals(True)
+        self.ui.sbasediridx.setValue(index)
+        self.ui.sbasediridx.blockSignals(False)
 
     def set_scan(self, checked):
         if checked:
@@ -512,7 +516,6 @@ class MainWindow(QMainWindow):
     def add_basedir(self, basedir, drive_idx, drive_uuid, drive, drive_info):
         r = self.basedirs.add_item((drive_uuid, drive, drive_info))
         self.update_basedir(basedir, drive_idx, drive, r)  # load the drive
-        self.basedirs.set_current_index(r)
         self.ui.sbasediridx.setMaximum(r)
 
     def rmv_basedir(self, index, current_index):
@@ -531,7 +534,11 @@ class MainWindow(QMainWindow):
         y = self.basedirs.current_index
         x = self.ui.sbasediridx.value()
 
-        suffix = None
+        # currently hasnt change so set drive_suffix for current suffix for debugging
+        # current text of drive button parse_drive(self.ui.basedirButton.currentText())
+        _, di, _ = self.basedirs.get_current_item()
+        drive_suffix = di.suffix  # or self.suffix
+
         try:
 
             uuid, drive_info, info = self.basedirs.get_item(x)
@@ -550,8 +557,8 @@ class MainWindow(QMainWindow):
             self.update_basedir(basedir, suffix, drive_info, x)
 
         except Exception as e:
-            self.ui.hudt.appendPlainText(f"changing drives. {suffix} going {'down' if y > x else 'up'} on basedir combo err: {e} {type(e).__name__}")
-            logging.error("Error switching sbasediridx %s to index %s err: %s", self.basedir, x, e, exc_info=True)
+            self.ui.hudt.appendPlainText(f"changing drives. {drive_suffix} going {'down' if y > x else 'up'} on basedir combo err: {e} {type(e).__name__}")
+            logging.error("Error switching sbasediridx %s to index %s, current index %s err: %s", self.basedir, x, y, e, exc_info=True)
             self.ui.sbasediridx.blockSignals(True)
             self.ui.sbasediridx.setValue(y)
             self.ui.sbasediridx.blockSignals(False)
@@ -858,6 +865,7 @@ class MainWindow(QMainWindow):
                     compLVL = updated_config['logs']['compLVL']
                     MODULENAME = updated_config['paths']['MODULENAME']
                     EXCLDIRS = user_path(updated_config['search']['EXCLDIRS'], self.usr)
+                    xRC = updated_config['search']['xRC']
                     basedir = updated_config['search']['drive']
                     extensions = updated_config['search']['extension']
                     proteusEXTN = updated_config['shield']['proteusEXTN']
@@ -914,7 +922,7 @@ class MainWindow(QMainWindow):
                         if dspEDITOR:
                             dspEDITOR = multi_value(dspEDITOR)
                             dspEDITOR, dspPATH = resolve_editor(dspEDITOR, new_dspPATH, toml)
-                            if not dspEDITOR and not dspPATH:
+                            if not dspEDITOR:
                                 raise ConfigurationError
 
                     uuid = None
@@ -945,7 +953,6 @@ class MainWindow(QMainWindow):
                                 self.rmv_basedir(ix, self.basedirs.current_index)  # changed mounts
 
                         if drive_not_indexed:
-                            cache_moved = False
 
                             CACHE_S, systimeche, drive_idx, driveTYPE = setup_drive_cache(
                                 basedir, self.lclhome, self.dbopt, self.dbtarget, self.sj, self.toml_file, self.CACHE_S_str, driveTYPE,
@@ -965,7 +972,7 @@ class MainWindow(QMainWindow):
                                     if not isinstance(di, dict):
                                         continue
                                     if di.get("idx_suffix") == idx:
-                                        self.ui.hudt.appendPlainText(f"drive changed mounts and wasnt properly updated check {self.sj} and set to idx_suffix for drive {basedir}, guid {uuid}")
+                                        self.ui.hudt.appendPlainText(f"drive changed mounts and wasnt properly updated check {self.sj} and set idx_suffix for drive {basedir} to {drive_idx}, guid {uuid}")
                                         # raise DriveLogicError(f"drive changed mounts and wasnt properly updated check {self.sj} and set to {drive_idx} for guid {guid}")
 
                             drive_uuid = drive_info.get("drive_partuuid")
@@ -1010,6 +1017,7 @@ class MainWindow(QMainWindow):
                     self.xzm = xzm
                     self.is_xzm_profile = xzm if self.basedir == "/" else False
                     self.EXCLDIRS = EXCLDIRS
+                    self.xRC = xRC
                     self.zipPROGRAM = zipPROGRAM
                     self.zipPATH = zipPATH
                     self.extensions = extensions
@@ -1077,7 +1085,7 @@ class MainWindow(QMainWindow):
             self.open_proc()
             self.proc.complete.connect(lambda code, _: self.update_ui_sn.emit(code, "editor"))
             # self.proc.complete.connect(lambda code, _: self.set_config(code))
-            self.proc.complete.connect(lambda code, status: QTimer.singleShot(500, lambda: self.set_config(code)))
+            self.proc.complete.connect(lambda code, status: QTimer.singleShot(1000, lambda: self.set_config(code)))
             self.proc.start_tomledit(self.dspEDITOR, [str(self.toml_file)])
 
         else:
@@ -1119,6 +1127,7 @@ class MainWindow(QMainWindow):
             "Drive name/Type": typeModel,
             "Drive type": drive_type,
             "Empty1":  "",
+            "xRC": self.xRC,
             "Proteus Shield active": str(ps),
             "Checksum and Caching": "y" if self.checksum else "n",
             "Empty1":  "",
@@ -1696,7 +1705,7 @@ class MainWindow(QMainWindow):
             return
 
         self.proc = ProcessHandler(self.lclhome, self.xdg_runtime, self.ui.dbmainlabel.text(), self.is_polkit)
-        self.open_proc(120000)
+        self.open_proc(280000)
 
         if compress:
             downloads = self.ui.combffileout.currentText()
@@ -2716,9 +2725,7 @@ class MainWindow(QMainWindow):
 
                     else:
 
-                        extn = self.proteusEXTN
-                        paths = self.proteusPATH
-                        extn += paths
+                        extn = self.proteusEXTN + self.proteusPATH
 
                     if extn:
 
@@ -2791,7 +2798,7 @@ def start_main_window():
     if dspEDITOR:  # user wants results output in text editor
         dspEDITOR = multi_value(dspEDITOR)
         dspEDITOR, dspPATH = resolve_editor(dspEDITOR, dspPATH_frm, toml_file)  # verify we have a working one
-        if not dspEDITOR and not dspPATH:
+        if not dspEDITOR:
             return 1
     cachermPATTERNS = config['backend']['cachermPATTERNS']
     popPATH = config['display']['popPATH'].rstrip('/')
@@ -2860,39 +2867,39 @@ def start_main_window():
                     )
                     QMessageBox.warning(None, "polkit check", fstr)
 
-                res = False
                 # from PySide6.QtWidgets import QInputDialog, QLineEdit
                 # pawd, ok = QInputDialog.getText(None, "Enter new GPG Password", "Password:", QLineEdit.EchoMode.Password)
                 icon = str(appdata_local / "Resources" / "gnupg-streamline.png")
-                key_error = False
+                key_error = res = False
                 dlg = PassphraseDialog(icon_path=icon)
                 if not dlg.exec():
                     key_error = True
+                else:
+                    pawd = dlg.get_password()
 
-                pawd = dlg.get_password()
+                    res = genkey(appdata_local, usr, email, email_name, dbtarget, CACHE_F, CACHE_S, flth, tempdir, is_polkit, pawd)
+                    if res:
 
-                res = genkey(appdata_local, usr, email, email_name, dbtarget, CACHE_F, CACHE_S, flth, tempdir, is_polkit, pawd)
-                if res:
+                        rlt = test_gpg_agent(email)
+                        if rlt is None:
 
-                    rlt = test_gpg_agent(email)
-                    if rlt is None:
+                            is_curses = False
 
-                        pinentry = None
-                        is_curses = False
-                        if gnupg_home:
-                            cfg = parse_gpg_agent_conf(gnupg_home)
-                            pinentry = cfg.get("pinentry-program")
+                            pinentry = None
+                            if gnupg_home:
+                                cfg = parse_gpg_agent_conf(gnupg_home)
+                                pinentry = cfg.get("pinentry-program")
 
-                        if pinentry and ("tty" in pinentry or "curses" in pinentry):
-                            is_curses = any(x in pinentry.lower() for x in ("tty", "curses"))
+                            if pinentry and ("tty" in pinentry or "curses" in pinentry):
+                                is_curses = any(x in pinentry.lower() for x in ("tty", "curses"))
 
-                        fstr = (
-                            "test gpg prompt failed in this session; GUI pinentry is recommended.\n"
-                            + (f"current config is set to {pinentry}\n" if is_curses else "")
-                            + "pinentry-gtk, pinentry-gtk-2, pinentry-gnome3 or pinentry-qt in .gnupg/gpg-agent.conf \n"
-                        )
-                        QMessageBox.warning(None, "curses", fstr)
-                    print("Got password (hidden):", "*" * len(pawd) + "\n")
+                            fstr = (
+                                "test gpg prompt failed in this session; GUI pinentry is recommended.\n"
+                                + (f"current config is set to {pinentry}\n" if is_curses else "")
+                                + "pinentry-gtk, pinentry-gtk-2, pinentry-gnome3 or pinentry-qt in .gnupg/gpg-agent.conf \n"
+                            )
+                            QMessageBox.warning(None, "curses", fstr)
+                        print("Got password (hidden):", "*" * len(pawd) + "\n")
                 if key_error or not res:
                     QMessageBox.critical(None, "Error", "Failed to generate key")
                     return 1
@@ -2917,29 +2924,41 @@ def start_main_window():
             j_settings = {}  # load it once. dump often to avoid desync but saves on unecessary reads
 
             CACHE_S, systimeche, suffix, driveTYPE = setup_drive_cache(
-                basedir, appdata_local, dbopt, dbtarget, json_file, toml_file,
-                CACHE_S_str, driveTYPE_frm, usr, email, compLVL, j_settings=j_settings, iqt=True
+                basedir, appdata_local, dbopt, dbtarget, json_file, toml_file, CACHE_S_str,
+                driveTYPE_frm, usr, email, compLVL, j_settings=j_settings, iqt=True
             )
             if not CACHE_S or not suffix or not j_settings:
+                print(CACHE_S)
+                print(suffix)
                 return 1
 
-            # if the drive changed in config update the json
-            if driveTYPE_frm:
-                dtype = j_settings.get(suffix, {}).get("drive_type")
-                if dtype != driveTYPE_frm:
-                    j_settings.setdefault(suffix, {})["drive_type"] = driveTYPE_frm
-                    dump_j_settings(j_settings, json_file)
-                    driveTYPE = driveTYPE_frm
+            # config changes
+            json_dump = False
 
-            if not gnupg_home:
-                gnupg_home = find_gnupg_home(json_file, j_settings)  # reason for gnupg_home is exclusions in build system profile. save to json file so dont have to check again
+            # from user install
+            if gnupg_home:
+                gpg_home = j_settings.get("gnupghome")
+                if str(gnupg_home) != gpg_home:
+                    j_settings["gnupghome"] = str(gnupg_home)
+                    json_dump = True
+            else:
+                gnupg_home = find_gnupg_home(json_file, j_settings, iqt=True)  # detect and save
+                if gnupg_home:
+                    json_dump = True
 
-            distro_name = j_settings.get("/", {}).get("distro_name")
+            distro_name = j_settings.setdefault("/", {}).get("distro_name")
             if not distro_name:
                 _, distro_name = get_linux_distro()
                 if distro_name:
-                    update_dict({"distro_name": distro_name}, j_settings, "/")
+                    j_settings.setdefault("/", {})["distro_name"] = distro_name
+                    json_dump = True
+
+            # end confnig changes
+
             # end startup/initialize
+
+            if json_dump:
+                dump_j_settings(j_settings, json_file)
 
             print("Qt database in ", tempdir)
             icon_path = str(iconPATH)
