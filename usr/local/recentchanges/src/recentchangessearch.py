@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#   Porteus                                                                           03/04/2026
+#   Porteus                                                                           03/23/2026
 #   recentchanges. Developer buddy      recentchanges and recentchanges search
 #   Provide ease of pattern finding ie what files to block we can do this a number of ways
 #   1) if a file was there (many as in more than a few) and another search lists them as deleted its either a sys file or not but unwanted nontheless
@@ -146,6 +146,8 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
     CACHE_F = str(CACHE_F_frm)
     CACHE_S_str = str(CACHE_S_frm)
 
+    j_settings = {}  # convenience for commandline if basedir other than C:\\ always have available.
+    # if basedir is "/" doesnt not touch json for speed as its set that way most of the time **
     config = load_toml(toml_file)
     if not config:
         return 1
@@ -176,9 +178,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
     log_file = config['logs']['userLOG'] if USR != "root" else root_log_file
     EXCLDIRS = user_path(config['search']['EXCLDIRS'], USR)
     xRC = config['search']['xRC']
-    driveTYPE = config['search']['driveTYPE']
-    if driveTYPE.lower() == "ssd":
-        is_mcore = True
+    driveTYPE_frm = config['search']['driveTYPE']
     # email_name = config['backend']['name']
     # dspEDITOR = config['display']['dspEDITOR']
     # if dspEDITOR:
@@ -215,7 +215,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
     user_setting = {
         'USR': USR,
         'email': email,
-        'driveTYPE': driveTYPE,
+        'driveTYPE': driveTYPE_frm,
         'FEEDBACK': FEEDBACK,
         'ANALYTICS': ANALYTICS,
         'ANALYTICSECT': ANALYTICSECT,
@@ -226,6 +226,7 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
     }
 
     # init
+
     gnupg_home = None
 
     if iqt:
@@ -260,17 +261,19 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
                 return 1
 
         # if the drive type is not set auto detect it and update toml. look in json for partuuid and build CACHE_S
-        #
         # if for some reason the mount changed for the drive update the json, rename the cache files and rename database tables
 
-        j_settings = None
-
+        # summary if the drive is unkown its detected and the toml is updated
         CACHE_S, _, suffix, driveTYPE = setup_drive_cache(
-            basedir, appdata_local, dbopt, dbtarget, json_file, toml_file, CACHE_S_str, driveTYPE, USR, email, compLVL, j_settings=j_settings
+            basedir, appdata_local, dbopt, dbtarget, json_file, toml_file, CACHE_S_str, driveTYPE_frm, USR, email, compLVL, j_settings=j_settings
         )
         if not CACHE_S or not suffix:
             return 1
-
+        if not j_settings:
+            if basedir != "/":
+                print("failed to load json in setup_drive_cache")
+                return 1
+        user_setting['driveTYPE'] = driveTYPE
     # end init
 
     # VARS
@@ -501,7 +504,10 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
 
         cend = time.time()
 
+        sys.stdout.flush()
+
         # end Main search
+
         if RECENT is None or tout is None:
             return 1
 
@@ -512,10 +518,17 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
             encr_cache(cfr, CACHE_F, USR, uid, gid, email, compLVL)
 
         if not RECENT:
-            cprint.cyan("No new files found")
-            if iqt:
-                print("Progress: 100.00%")
-            return 0
+            if not tout:
+                cprint.cyan("No new files found")
+                if iqt:
+                    print("Progress: 100.00%")
+                return 0
+            # for entry in tout:
+            #     tss = entry[0].strftime(fmt)
+            #     fp = entry[1]
+            #     print(f'{tss} {fp}')
+            RECENT = tout[:]
+            tout = []
 
         COMPLETE = COMPLETE_1 + COMPLETE_2  # nsf append to rout in pstsrg before stat insert
         proval = 60  # current progress
@@ -773,6 +786,11 @@ def main(argone, argtwo, USR, pwrd, argf="bnk", method="", iqt=False, drive=None
             if POSTOP:
                 outpath = os.path.join(USRDIR, tsv_doc)
                 if not os.path.isfile(outpath):
+
+                    # run_doctrine(appdata_local, USRDIR, SORTCOMPLETE, TMPOPT, logf, rout, toml_file, escaped_user, method, fmt)
+                    # cprint.green(f"File doctrine.tsv created {USRDIR}/{tsv_doc}")
+                    # change_perm(outpath, uid, gid)
+
                     if build_tsv(SORTCOMPLETE, TMPOPT, logf, rout, escaped_user, outpath, method, fmt):
                         change_perm(outpath, uid, gid)
                         cprint.green(f"File doctrine.tsv created {USRDIR}/{tsv_doc}")

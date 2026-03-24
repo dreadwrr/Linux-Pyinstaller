@@ -1,4 +1,4 @@
-# developer buddy v5.0 core                     03/03/2026
+# developer buddy v5.0 core                     03/23/2026
 import csv
 import glob
 import importlib.util
@@ -18,12 +18,13 @@ from .fsearch import process_line
 from .fsearchparallel import process_lines
 from .pyfunctions import cprint
 from .pyfunctions import suppress_list
+from .pyfunctions import unescf_py
 install_root = find_install()
 filter_patterns_path = install_root / "filter.py"
 spec = importlib.util.spec_from_file_location("user_filter", filter_patterns_path)
 user_filter = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(user_filter)
-# Note: For database cacheclear / terminal supression see pyfunctions.py
+# Note: For database cacheclear / terminal supression see config.toml
 
 
 def reset_csvliteral(csv_file):
@@ -360,9 +361,9 @@ def find_files(find_command, search_paths, file_type, RECENT, COMPLETE, RECENTNU
     try:
         buffer = b''
         proc = subprocess.Popen(find_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # stderr=subprocess.DEVNULL
-        # output, err = proc.communicate()  # original
+        # output, err = proc.communicate()  # original if buffering
 
-        # if proc.returncode not in (0, 1):  # original
+        # if proc.returncode not in (0, 1):  # original if buffering
         #     stderr_str = err.decode("utf-8")
         #     print(stderr_str)
         #     print("Find command failed, unable to continue. Quitting.")
@@ -404,12 +405,12 @@ def find_files(find_command, search_paths, file_type, RECENT, COMPLETE, RECENTNU
         proc.wait()
 
         if proc.returncode not in (0, 1):
-            # for line in iter(proc.stderr.readline, b''):
-            #     decoded = line.decode('utf-8', errors='replace').strip()
-            # if decoded:
-            #     print(decoded)
-            stderr_str = proc.stderr.decode('utf-8', errors='replace').strip()
-            print(stderr_str)
+            if proc.stderr is not None:
+
+                for raw in iter(proc.stderr.readline, b''):
+                    text = raw.decode("utf-8", errors="replace").strip()
+                    if text:
+                        print(text)
             print("Find command failed, unable to continue. Quitting.")
             sys.exit(1)
 
@@ -423,7 +424,7 @@ def find_files(find_command, search_paths, file_type, RECENT, COMPLETE, RECENTNU
     if file_type == "main":
         end = time.time()
 
-    # file_entries = [entry.decode('utf-8', errors='backslashreplace') for entry in output.split(b'\0') if entry]  # original
+    # file_entries = [entry.decode('utf-8', errors='backslashreplace') for entry in output.split(b'\0') if entry]  # original if buffering
 
     # using escf_py and unesc_py for bash support otherwise can use: filename.encode('unicode_escape').decode('ascii') , codecs.decode(escaped, 'unicode_escape')
     # using escf_py and unesc_py for bash
@@ -432,7 +433,7 @@ def find_files(find_command, search_paths, file_type, RECENT, COMPLETE, RECENTNU
     # json.dumps(filename)    " -> \"   \n -> \\n   \ -> \\   \t -> \\t  \r \\r
     # json.loads(line)
 
-    # original
+    # original if buffering
     # records = []
     # for entry in file_entries:
     #     fields = entry.split(maxsplit=10)
@@ -596,11 +597,19 @@ def get_diff_file(USRDIR, MODULENAME):
 
     diff_file = None
 
+    all_matches = []
     for pattern in patterns:
-        matches = glob.glob(pattern)
-        if matches:
-            diff_file = sorted(matches, key=os.path.getmtime, reverse=True)[0]
-            break
+        all_matches.extend(glob.glob(pattern))
+
+    if all_matches:
+        diff_file = max(all_matches, key=os.path.getmtime)
+
+    # selects /tmp first # original
+    # for pattern in patterns:
+    #     matches = glob.glob(pattern)
+    #     if matches:
+    #         diff_file = sorted(matches, key=os.path.getmtime, reverse=True)[0]
+    #         break
 
     if not diff_file:
         diff_file = default_diff
@@ -784,9 +793,6 @@ def build_tsv(SORTCOMPLETE, TMPOPT, logf, rout, escaped_user, outpath, method, f
             SORTCOMPLETE = filter_lines_from_list(SORTCOMPLETE, escaped_user)
 
     tsv_files = []
-    mtyp = is_copy = ""
-
-    is_statable = st = None
 
     try:
         copy_paths = set()
@@ -804,11 +810,15 @@ def build_tsv(SORTCOMPLETE, TMPOPT, logf, rout, escaped_user, outpath, method, f
                     copy_paths.add(full_path)
 
         is_link = any(len(row) > 7 and row[7] == 'y' for row in SORTCOMPLETE)
-        header = "Datetime\tFile\tSize(kb)\tType\tSymlink" + ("\tTarget" if is_link else "") + "\tCreation\tcam\tAccessed\tOwner\tStatable\tCopy"
+        header = "Datetime\tFile\tSize(kb)\tType\tSymlink" + ("\tTarget" if is_link else "") + "\tChanged\tcam\tAccessed\tOwner\tStatable\tCopy"
 
         for entry in SORTCOMPLETE:
             if len(entry) < 13:
                 continue
+
+            is_statable = st = None
+            mtyp = is_copy = ""
+
             dt = entry[0]
             fpath = entry[1]
 
@@ -873,3 +883,80 @@ def build_tsv(SORTCOMPLETE, TMPOPT, logf, rout, escaped_user, outpath, method, f
         print(f"Error building TSV data in build_tsv func rntchangesfunctions: {type(e).__name__} {e}")
         return False
     return True
+
+
+def postop(all_data, USRDIR, toml, lclhome=None):
+
+    log = '/tmp/log.log'
+
+    with open(log, 'w', encoding="utf-8") as file2:
+        for entry in all_data:
+            fixed_fields = " ".join(str(field) for field in entry[:-1])
+            line = f"{fixed_fields} {entry[-1]}"
+            file2.write(line + "\n")
+
+    script_file = "postop.sh"
+    script_path = "/usr/local/save-changesnew/" + script_file
+    if lclhome:
+        script_path = os.path.join(lclhome, script_file)
+    cmd = [
+        script_path,
+        log,
+        USRDIR,
+        str(toml)
+    ]
+    script_dir = os.path.dirname(script_path)
+    result = subprocess.run(cmd, cwd=script_dir, capture_output=True, text=True)
+    print(result.stdout)
+
+    if result.returncode == 1:
+        print("Post op failed")
+        return 1
+
+
+def run_doctrine(appdata_local, USRDIR, SORTCOMPLETE, TMPOPT, logf, rout, toml_file, escaped_user, method, fmt):
+
+    if method != "rnt":
+        if logf is TMPOPT:
+            SORTCOMPLETE = filter_lines_from_list(SORTCOMPLETE, escaped_user)
+
+    # Check if it was a copy
+    copy_paths = set()
+    if rout:
+        for line in rout:
+            parts = line.strip().split(maxsplit=5)
+            if len(parts) < 6:
+                continue
+            action = parts[0]
+            if action in ("Deleted", "Nosuchfile"):
+                continue
+            if action == "Copy":
+                full_path = unescf_py(parts[5])
+                copy_paths.add(full_path)
+
+    all_data = []
+    for record in SORTCOMPLETE:
+
+        if len(record) < 17:
+            logging.debug("An entry for POSTOP was short less than 17. record: %s", record)
+            continue
+
+        mtime = record[0].strftime(fmt)  # 1 2
+        changetime = record[2] if record[2] else "None None"  # 3 4
+        atime = record[4] if record[4] else "None None"  # 5 6
+        filesize = record[6]  # 7
+        sym = record[7]  # 8
+        user = record[8]  # 9
+        group = record[9]  # 10
+        cam = record[11]  # 11
+        lastmodified = record[13] if record[13] else "None None"    # 12 13
+        is_copy = "y" if record[16] in copy_paths else "None"       # 14
+        file_path = record[16]                                      # 15
+        # inode = record[3]
+        # checksum = record[5]
+        # mode = record[10]
+        # hardlink = record[14]
+        # usec_zero = record[15]
+        all_data.append((mtime, changetime, atime, filesize, sym, user, group, cam, lastmodified, is_copy, file_path))
+
+    postop(all_data, USRDIR, toml_file, appdata_local)

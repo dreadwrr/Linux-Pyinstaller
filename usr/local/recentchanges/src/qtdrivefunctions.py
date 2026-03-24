@@ -321,14 +321,23 @@ def get_cache_files(basedir, dbopt, dbtarget, CACHE_S, json_file, user, email, c
     cache_file = None
     systimeche = None
 
+    # qt gui initial load json
+    # this avoids loading json unnecessarily for commandline if basedir is "/"
+    # which is what it would be set to m ost of the time
+
     if isinstance(j_settings, dict) and not j_settings:  # iqt
         jdata = get_json_settings(None, None, json_file)
         j_settings.update(jdata)
 
     if basedir != "/":
 
-        if j_settings is None:  # command line
-            j_settings = get_json_settings(None, None, json_file)
+        # command line
+        if not iqt:
+            if j_settings is None:
+                j_settings = get_json_settings(None, None, json_file)  # original left for legacy
+            elif not j_settings:
+                jdata = get_json_settings(None, None, json_file)
+                j_settings.update(jdata)
 
         basedir = basedir.rstrip('/')
         if not os.path.exists(basedir):
@@ -346,7 +355,7 @@ def get_cache_files(basedir, dbopt, dbtarget, CACHE_S, json_file, user, email, c
             drive_suffix = device_name_of_mount(basedir)  # basedir.split('/')[-1]
 
             x = 0
-            drive = suffix = drive_info = None
+            suffix = drive_info = None
 
             found = False
             for key, di in j_settings.items():
@@ -355,6 +364,7 @@ def get_cache_files(basedir, dbopt, dbtarget, CACHE_S, json_file, user, email, c
                 drive_partuuid = di.get("drive_partuuid")
                 if not found and drive_partuuid and drive_partuuid == uuid:
                     suffix = key
+                    drive_info = di.copy()
                     moi = di.get("mount_of_index")
                     found = True
                 elif isinstance(key, str) and key.endswith(drive_suffix):
@@ -418,29 +428,24 @@ def get_cache_files(basedir, dbopt, dbtarget, CACHE_S, json_file, user, email, c
                                 for old_table, new_table in table_list:
                                     if table_exists(conn, old_table):
                                         cur.execute(f"ALTER TABLE {old_table} RENAME TO {new_table};")
-                                conn.commit()
 
                             nc = cnc(dbopt, compLVL)
                             if encr(dbopt, dbtarget, email, no_compression=nc, dcr=iqt):  # leave open for gui
                                 # rename any cache file
                                 if os.path.isfile(old_cache_s):
                                     os.rename(old_cache_s, new_cache_s)
-                                update_dict(None, j_settings, drive)  # remove the old
+                                update_dict(None, j_settings, suffix)  # remove the old
                             else:
-                                if not iqt:
-                                    removefile(dbopt)
                                 print(f"Reencryption failed on updating guid for drive {basedir}.\n")
                                 print("If unable to resolve reset json file and clear gpgs")
 
                         except sqlite3.Error as e:
-                            if not iqt:
-                                removefile(dbopt)
                             print(f"Database error get_cache_files while moving tables db {dbopt} err: {e}")
                         except Exception as e:
-                            if not iqt:
-                                removefile(dbopt)
                             print(f"err {type(e).__name__}: {e}\ncontinuing")
 
+                    if not iqt:
+                        removefile(dbopt)
                     drive_info["mount_of_index"] = basedir
                     drive_info["idx_suffix"] = drive_suffix
                     j_settings[basedir] = drive_info  # add the new now that nothing went wrong
@@ -468,16 +473,27 @@ def get_cache_files(basedir, dbopt, dbtarget, CACHE_S, json_file, user, email, c
 
 def setup_drive_cache(basedir, appdata_local, dbopt, dbtarget, json_file, toml_file, CACHE_S, driveTYPE, USR, email, compLVL, j_settings=None, partuuid=None, iqt=False):
 
+    if driveTYPE:
+        if driveTYPE.lower() not in ('hdd', 'ssd'):
+            print(f"Incorrect setting driveTYPE: {driveTYPE} in config: {toml_file}")
+            return None, None, None, None
+
     CACHE_S, systimeche, suffix = get_cache_files(basedir, dbopt, dbtarget, CACHE_S, json_file, USR, email, compLVL, j_settings, partuuid, iqt)  # confirm the uuid and build the CACHE_S and suffix
     if not suffix:
         return None, None, None, None
 
-    if j_settings and basedir != "/":
-        driveTYPE = j_settings.get(suffix, {}).get("drive_type")
-    if iqt:
-        if not j_settings:
-            driveTYPE = None
+    if driveTYPE and j_settings:
+        dt = j_settings.get(suffix, {}).get("drive_type")
+        if dt:
+            if dt != driveTYPE:
+                j_settings[suffix]["drive_type"] = driveTYPE
+                dump_j_settings(j_settings, json_file)
 
+            return CACHE_S, systimeche, suffix, driveTYPE
+    if j_settings is None:
+        print("None")
+    elif not j_settings:
+        print("Not")
     driveTYPE = setup_drive_settings(basedir, suffix, driveTYPE, toml_file, json_file, j_settings, False, appdata_local)
     if driveTYPE is None:
         print(f"An error occured set SSD or HDD in {toml_file} for {basedir}")

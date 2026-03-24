@@ -7,10 +7,10 @@ from .gpgcrypto import encr
 from .gpgcrypto import start_gpg_agent
 from .pysql import clear_conn
 from .pysql import clear_sys_profile
+from .query import blank_count
 from .query import main as query_main
 from .qtclasses import Worker
 from .qtfunctions import clear_cache
-from .query import blank_count
 from .rntchangesfunctions import cnc
 from .rntchangesfunctions import removefile
 from .rntchangesfunctions import reset_csvliteral
@@ -98,7 +98,8 @@ class ClearWorker(Worker):
                                     self.log.emit("Filter hits cleared.")
                                     x = blank_count(cur)
                                     if x % 5 == 0:
-                                        self.log.emit(f"for resetting filter hits see top of {self.flth}")
+
+                                        self.log.emit("for resetting filter hits see filter.py")
                                 except Exception as e:
                                     cm = f'Failed to clear csv: {self.flth} {type(e).__name__} {e}'
                                     self.status.emit(cm)
