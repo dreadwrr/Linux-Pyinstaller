@@ -177,6 +177,7 @@ dspPATH = ""
 										# wb  white on black
 										# solar   solarize cyan
 										# monochrome   for grey
+                                        # modern
 hudCOLOR = "solar"
 
 								# default 12
