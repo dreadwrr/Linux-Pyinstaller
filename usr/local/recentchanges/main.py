@@ -1,4 +1,4 @@
-# 03/23/2026              Qt gui linux                 Developer buddy 5.0.7
+# 03/27/2026              Qt gui linux                 Developer buddy 5.0.8
 import glob
 import logging
 import multiprocessing
@@ -183,7 +183,7 @@ class MainWindow(QMainWindow):
         # QTimer.singleShot(5000, self.display_db)
 
         # Vars
-        self.app_version = "5.0.7"
+        self.app_version = "5.0.8"
         self.PWD = os.getcwd()
         self.home_dir = home_dir
         config_local = home_dir / ".config" / "recentchanges"
@@ -694,10 +694,13 @@ class MainWindow(QMainWindow):
         else:
             if self.hudSZE == 0:
                 self.hudSZE = 12
+        qx = ""
+        if ccolor:
+            qx = f"background-color: black; color: #{ccolor};"
+
         self.ui.hudt.setStyleSheet(f"""
             QPlainTextEdit {{
-                background-color: black;
-                color: #{ccolor};
+                {qx}
                 font-family: {f_f};
                 font-size: {self.hudSZE}pt;
             }}
