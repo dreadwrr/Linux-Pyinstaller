@@ -1,4 +1,5 @@
 ## Pyinstaller Linux qt recentchanges <br>
+Release 5.0.8 with proper drive logic handling for spinner and dynamic config edit <br>
 New release! 5.0.7 with improved drive logic and optimizations <br><br>
 
 cd /usr/local/recentchanges <br>
