@@ -118,6 +118,7 @@ EOF
 }
 
 setup_exports() {
+    [[ "$1" = "gui" ]] && { "$app_install"/main ; exit ; }
 	export CMD_LINE="1"
 	[[ "$1" = "query" ]] && { "$app_install"/main "$USR" "$PWD" query ; exit ; }
 	[[ "$1" = "reset" ]] && { "$app_install"/main "$USR" "$PWD" reset ; exit ; }
