@@ -5,7 +5,7 @@
 #  [^/]+ match up to only one directory level example somepath/[^/]+/thisdir
 # /.*?/ non greedily match up to and including first directory found. ie somepath/.*?/thisdir
 #
-# Example from below to combine but not done here for readability
+# Example from below to combine but not done here for readability note regex
 # r'/var/cache',
 # r'/var/run',
 # can be combined as
@@ -39,10 +39,6 @@ _filter = [
         r'\.local/share',
         r'\.local/state',
         r'\.xsession',
-
-        # Inclusions from script
-        # r'/home/{{user}}/\.local/share/recentchanges/recent\.gpg',
-        # r'/home/{{user}}/\.local/share/recentchanges/flth\.csv',
 
         r'/root/\.auth',
         r'/root/\.config',
