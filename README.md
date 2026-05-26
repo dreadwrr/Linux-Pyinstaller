@@ -1,3 +1,5 @@
+Version 6.0.0 posted to repo have to test before release.
+
 ## Pyinstaller Linux qt recentchanges <br>
 
 cd /usr/local/recentchanges <br>
