@@ -1,4 +1,4 @@
-Version 6.0.0 of pyinstaller posted to repo have to test before release.
+Version 6.0.0 of pyinstaller posted above have to test before release.
 
 ## Pyinstaller Linux qt recentchanges <br>
 
