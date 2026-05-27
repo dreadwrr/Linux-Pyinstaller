@@ -24,7 +24,7 @@ copy main and _internal from dist/main folder to /usr/local/recentchanges ./main
 chown root:root main <br>
 chown root:root /usr/local/recentchanges <br>
 
-optionally remove src/ and main.py <br><br>
+optionally remove src/ and main.py as well into an .xzm <br><br>
 
 ![Alt text](https://i.imgur.com/xK10DuX.png) <br>
 ![Alt text](https://i.imgur.com/3dXwKzW.png)<br><br>
