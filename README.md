@@ -1,7 +1,7 @@
 Version 6.0.0 of pyinstaller posted above tested on nemesis will test on porteus and update if finding anything
 
 ## Pyinstaller Linux qt recentchanges <br>
-
+chown guest:users /usr/local/recentchanges <br>
 cd /usr/local/recentchanges <br>
 python -m venv .venv <br>
 source .venv/bin/activate <br>
