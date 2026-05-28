@@ -4,8 +4,8 @@ in preparing to build <br>
 to reduce the final size comment out line 8 and 9 in main.spec <br>
 #tmp_ret = collect_all('PySide6') <br>
 #datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2] <br><br>
-check owner of app install: chown guest:users /usr/local/recentchanges <br>
 
+chown guest:users /usr/local/recentchanges <br>
 cd /usr/local/recentchanges <br>
 python -m venv .venv <br>
 source .venv/bin/activate <br>
@@ -37,7 +37,8 @@ optionally remove src/ and main.py or make into .xzm <br><br>
 
 will later take steps to reduce size but this doesnt appear to be needed <br>
 /usr/local/recentchanges/internal_/libicudata.so.77 31 mb <br>
-strip=True
+/usr/local/recentchanges/internal_/libcrypto.so.3 6 mb <br>
+use strip=True
 
 ![Alt text](https://i.imgur.com/xK10DuX.png) <br>
 ![Alt text](https://i.imgur.com/3dXwKzW.png)<br><br>
