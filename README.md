@@ -44,5 +44,9 @@ run with excludes above to remove size further. Qml and WebEngine taking size <b
 remove folder /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/translations/ 13.6mb <br>
 use strip=True
 
+## Nuitka
+will post if I find a suitable install method for nuitka. the build structure wasnt satisfactory but the size was good at 200mb 
+
+
 ![Alt text](https://i.imgur.com/xK10DuX.png) <br>
 ![Alt text](https://i.imgur.com/3dXwKzW.png)<br><br>
