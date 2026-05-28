@@ -4,7 +4,6 @@ in preparing to build <br>
 to reduce the final size comment out line 8 and 9 in main.spec <br>
 #tmp_ret = collect_all('PySide6') <br>
 #datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2] <br><br>
-
 check owner of app install: chown guest:users /usr/local/recentchanges <br>
 
 cd /usr/local/recentchanges <br>
