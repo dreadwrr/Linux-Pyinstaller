@@ -1,5 +1,6 @@
 ## Pyinstaller Linux qt recentchanges <br>
 chown guest:users /usr/local/recentchanges <br>
+
 cd /usr/local/recentchanges <br>
 python -m venv .venv <br>
 source .venv/bin/activate <br>
@@ -7,6 +8,8 @@ python -m pip install --upgrade pip <br>
 pip install -r requirements.txt <br>
 pip install pyinstaller <br>
 python3 -m PyInstaller --clean --noconfirm main.spec <br><br>
+deactivate
+
 if there is an error about webengine add to main.spec <br>
     excludes=[ <br>
         'tkinter', <br>
