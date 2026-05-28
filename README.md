@@ -39,6 +39,8 @@ will later take steps to reduce size but this doesnt appear to be needed <br>
 /usr/local/recentchanges/internal_/libcrypto.so.3 6 mb <br>
 /usr/local/recentchanges/dist/main/_internal/libQt6Network.so.6 <br>
 /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/lib/libQt6Network.so.6 2.1 mb <br>
+
+remove folder /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/translations/ 13.6mb <br>
 use strip=True
 
 ![Alt text](https://i.imgur.com/xK10DuX.png) <br>
