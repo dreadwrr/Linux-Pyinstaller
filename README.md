@@ -16,15 +16,17 @@ python3 -m PyInstaller --clean --noconfirm main.spec <br><br>
 deactivate
 
 if there is an error about webengine add to main.spec <br>
-    excludes=[ <br>
-        'tkinter', <br>
-        'PySide6.QtWebEngine', <br>
-        'PySide6.QtWebEngineWidgets', <br>
-        'PySide6.QtWebEngineCore', <br>
-        'PySide6.QtMultimedia', <br>
-        'PySide6.QtCharts', <br>
-        'PySide6.QtPrintSupport', <br>
-	], <br>
+    excludes=[
+    'tkinter',
+    'PySide6.QtWebEngine',
+    'PySide6.QtWebEngineWidgets',
+    'PySide6.QtWebEngineCore',
+    'PySide6.QtNetworkAuth',
+    'PySide6.QtQml',
+    'PySide6.QtMultimedia',
+    'PySide6.QtCharts',
+    'PySide6.QtPrintSupport',
+    ], <br>
 <br>
 copy main and _internal from dist/main folder to /usr/local/recentchanges ./main <br>
 chown root:root main <br>
