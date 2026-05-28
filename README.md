@@ -35,8 +35,9 @@ chown root:root /usr/local/recentchanges <br>
 optionally remove src/ and main.py or make into .xzm <br><br>
 
 
-will later take steps to reduce size but this doesnt appear to be needed
+will later take steps to reduce size but this doesnt appear to be needed <br>
 /usr/local/recentchanges/internal_/libicudata.so.77 31 mb
+strip=True
 
 ![Alt text](https://i.imgur.com/xK10DuX.png) <br>
 ![Alt text](https://i.imgur.com/3dXwKzW.png)<br><br>
