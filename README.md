@@ -1,5 +1,4 @@
 ## Pyinstaller Linux qt recentchanges <br>
-in preparing to build <br>
 
 to reduce the final size comment out line 8 and 9 in main.spec <br>
 #tmp_ret = collect_all('PySide6') <br>
