@@ -20,7 +20,7 @@ if there is an error about webengine add to main.spec <br>
     'PySide6.QtWebEngine', <br>
     'PySide6.QtWebEngineWidgets', <br>
     'PySide6.QtWebEngineCore', <br>
-    'PySide6.QtNetworkAuth', <br>
+    'PySide6.QtNetwork', <br>
     'PySide6.QtQml', <br>
     'PySide6.QtMultimedia', <br>
     'PySide6.QtCharts', <br>
@@ -37,6 +37,8 @@ optionally remove src/ and main.py or make into .xzm <br><br>
 will later take steps to reduce size but this doesnt appear to be needed <br>
 /usr/local/recentchanges/internal_/libicudata.so.77 31 mb <br>
 /usr/local/recentchanges/internal_/libcrypto.so.3 6 mb <br>
+/usr/local/recentchanges/dist/main/_internal/libQt6Network.so.6 <br>
+/usr/local/recentchanges/dist/main/_internal/PySide6/Qt/lib/libQt6Network.so.6 2.1 mb <br>
 use strip=True
 
 ![Alt text](https://i.imgur.com/xK10DuX.png) <br>
