@@ -5,7 +5,7 @@ to reduce the final size comment out line 8 and 9 in main.spec <br>
 #datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2] <br><br>
 
 chown guest:users /usr/local/recentchanges <br>
-cd /usr/local/recentchanges <br>
+cd /usr/local/recentchanges <br><br>
 python -m venv .venv <br>
 source .venv/bin/activate <br>
 python -m pip install --upgrade pip <br>
