@@ -50,6 +50,8 @@ try setting strip=True
 
 ## Nuitka
 
+This is a work in progress but looks promising as the compressed size is 53mb and is compiled to c
+
 I found a suitable build but I have to update the pyinstaller module to use the nuitka internal extracted location will post once complete
 
 get patchelf-0.14.3 from pkgs.org <br>
