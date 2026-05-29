@@ -50,8 +50,6 @@ try with setting strip=True
 
 ## Nuitka
 
-This is a work in progress and will update when the new module is updated
-
 Found a suitable build and looks promising as the compressed size is 53mb and is compiled to c
 
 Note: This requires the pyinstaller module as the nuitka internal extracted location had to be added
