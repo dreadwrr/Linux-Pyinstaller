@@ -36,7 +36,7 @@ chown root:root /usr/local/recentchanges <br>
 optionally remove src/ and main.py or make into .xzm <br><br>
 
 ##
-will later take steps to reduce size but these dont appear to be needed: <br>
+will later take steps to reduce size but these dont appear to be needed: <br><br>
 run with excludes above to remove size further. Qml and WebEngine taking size <br><br> 
 /usr/local/recentchanges/internal_/libicudata.so.77 31 mb <br>
 /usr/local/recentchanges/internal_/libcrypto.so.3 6 mb <br>
