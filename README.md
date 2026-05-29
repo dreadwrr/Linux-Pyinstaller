@@ -46,7 +46,7 @@ and to reduce further<br><br>
 /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/lib/libQt6Network.so.6 2.1 mb <br>
 
 remove folder /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/translations/ 13.6mb <br>
-try setting strip=True 
+try with setting strip=True 
 
 ## Nuitka
 
