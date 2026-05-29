@@ -59,7 +59,7 @@ activate patchelf
 
 from venv
 
-pip install nuitka
+pip install nuitka <br>
 pip install zstandard
 
 
