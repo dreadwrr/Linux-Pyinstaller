@@ -50,9 +50,11 @@ try setting strip=True
 
 ## Nuitka
 
-This is a work in progress but looks promising as the compressed size is 53mb and is compiled to c
+This is a work in progress and will update when the new module is updated
 
-I found a suitable build but I have to update the pyinstaller module to use the nuitka internal extracted location will post once complete
+Found a suitable build and looks promising as the compressed size is 53mb and is compiled to c
+
+Note: This requires the pyinstaller module as the nuitka internal extracted location had to be added
 
 get patchelf-0.14.3 from pkgs.org <br>
 activate patchelf
@@ -64,6 +66,8 @@ pip install zstandard
 
 
 ``` python -m nuitka --onefile --output-filename=main --onefile-tempdir-spec="/tmp/onefile_$$_118624_YD1fmvHJ_Qc" --remove-output --enable-plugin='pyside6' --noinclude-qt-plugins=printsupport --include-qt-plugins=sensible,platforms,sqldrivers --jobs=4 main.py ```
+
+remove main.build and main.dist
 
 
 
