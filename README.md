@@ -47,9 +47,8 @@ remove folder /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/translatio
 use strip=True
 
 ## Nuitka
-will post if I find a suitable install method for nuitka. the build structure wasnt satisfactory but the size was good at 200mb
 
-I found a suitable build but I have to update the pyinstaller module to use the nuitka internal will post once complete
+I found a suitable build but I have to update the pyinstaller module to use the nuitka internal extracted location will post once complete
 
 requires patchelf-0.14.3 from pkgs.org
 activate patchelf
