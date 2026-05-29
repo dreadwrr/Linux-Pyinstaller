@@ -51,7 +51,7 @@ use strip=True
 
 I found a suitable build but I have to update the pyinstaller module to use the nuitka internal extracted location will post once complete
 
-requires patchelf-0.14.3 from pkgs.org
+get patchelf-0.14.3 from pkgs.org <br>
 activate patchelf
 
 pip install nuitka
