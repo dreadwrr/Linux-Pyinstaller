@@ -51,6 +51,13 @@ will post if I find a suitable install method for nuitka. the build structure wa
 
 I found a suitable build but I have to update the pyinstaller module to use the nuitka internal will post once complete
 
+requires patchelf-0.14.3 from pkgs.org
+activate patchelf
+
+pip install nuitka
+pip install zstandard
+
+
 ``` python -m nuitka --onefile --output-filename=main --onefile-tempdir-spec="/tmp/onefile_$$_118624_YD1fmvHJ_Qc" --product-name=main --remove-output --enable-plugin='pyside6' --noinclude-qt-plugins=printsupport --include-qt-plugins=sensible,platforms,sqldrivers --jobs=4 main.py ```
 
 
