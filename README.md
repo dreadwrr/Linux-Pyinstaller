@@ -54,6 +54,8 @@ I found a suitable build but I have to update the pyinstaller module to use the 
 get patchelf-0.14.3 from pkgs.org <br>
 activate patchelf
 
+from venv
+
 pip install nuitka
 pip install zstandard
 
