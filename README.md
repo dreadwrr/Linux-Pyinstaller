@@ -38,7 +38,7 @@ optionally remove src/ and main.py or make into .xzm <br><br>
 ##
 will later take steps to reduce size but these dont appear to be needed: <br><br>
 run with excludes above to remove size further. Qml and WebEngine taking size <br><br> 
-and to reduce further<br><br>
+and to reduce further remove<br><br>
 /usr/local/recentchanges/internal_/libicudata.so.77 31 mb <br>
 /usr/local/recentchanges/internal_/libcrypto.so.3 6 mb <br>
 /usr/local/recentchanges/dist/main/_internal/libQt6Network.so.6 <br>
