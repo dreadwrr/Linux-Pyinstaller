@@ -1,7 +1,7 @@
 ## Pyinstaller Linux qt recentchanges <br>
 check app install is owned by guest: chown guest:users /usr/local/recentchanges <br>
 
-if wanting to reduce some size comment out line 8 and 9 in main.spec <br>
+if wanting to reduce some size comment out line 8 and 9 in main.spec (Will post to later update) <br>
 #tmp_ret = collect_all('PySide6') <br>
 #datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2] <br><br>
 
