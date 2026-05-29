@@ -51,7 +51,7 @@ try with setting strip=True
 
 Found a suitable build and looks promising as the compressed size is 53mb and is compiled to c
 
-Note: This requires the pyinstaller6.0.0 module as the nuitka internal extracted location had to be added
+Note: This requires the 6.0.0-pyinstaller release as the nuitka internal extracted location had to be added
 
 get patchelf-0.14.3 from pkgs.org <br>
 activate patchelf
