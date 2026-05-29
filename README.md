@@ -47,7 +47,12 @@ remove folder /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/translatio
 use strip=True
 
 ## Nuitka
-will post if I find a suitable install method for nuitka. the build structure wasnt satisfactory but the size was good at 200mb 
+will post if I find a suitable install method for nuitka. the build structure wasnt satisfactory but the size was good at 200mb
+
+I found a suitable build but I have to update the pyinstaller module to use the nuitka internal will post once complete
+
+``` python -m nuitka --onefile --output-filename=main --onefile-tempdir-spec="/tmp/onefile_$$_118624_YD1fmvHJ_Qc" --product-name=main --remove-output --enable-plugin='pyside6' --noinclude-qt-plugins=printsupport --include-qt-plugins=sensible,platforms,sqldrivers --jobs=4 main.py ```
+
 
 
 ![Alt text](https://i.imgur.com/xK10DuX.png) <br>
