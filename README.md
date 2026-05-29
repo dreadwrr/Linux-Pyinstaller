@@ -4,15 +4,17 @@ to reduce the final size comment out line 8 and 9 in main.spec <br>
 #tmp_ret = collect_all('PySide6') <br>
 #datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2] <br><br>
 
+```
+cd /usr/local/recentchanges
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install pyinstaller
+python3 -m PyInstaller --clean --noconfirm main.spec
 
-cd /usr/local/recentchanges <br><br>
-python -m venv .venv <br>
-source .venv/bin/activate <br>
-python -m pip install --upgrade pip <br>
-pip install -r requirements.txt <br>
-pip install pyinstaller <br>
-python3 -m PyInstaller --clean --noconfirm main.spec <br><br>
 deactivate
+```
 
 if there is an error about webengine add to main.spec <br>
     excludes=[ <br>
