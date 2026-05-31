@@ -33,7 +33,7 @@ chown root:root /usr/local/recentchanges <br>
 
 optionally remove src/ and main.py or make into .xzm <br><br>
 
-##
+## Adjust size
 will later take steps to reduce size but these dont appear to be needed: <br><br>
 run with excludes above to remove size further. Qml and WebEngine taking size <br><br> 
 and to reduce further remove a few libraries<br><br>
