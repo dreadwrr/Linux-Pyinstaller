@@ -10,8 +10,7 @@ source .venv/bin/activate <br>
 python -m pip install --upgrade pip <br>
 pip install -r requirements.txt <br>
 pip install pyinstaller <br>
-python3 -m PyInstaller --clean --noconfirm main.spec <br><br>
-
+python3 -m PyInstaller --clean --noconfirm main.spec <br>
 deactivate <br><br>
 
 
