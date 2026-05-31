@@ -4,7 +4,6 @@ if wanting to reduce some size comment out line 8 and 9 in main.spec <br>
 #tmp_ret = collect_all('PySide6') <br>
 #datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2] <br><br>
 
-```
 cd /usr/local/recentchanges
 python -m venv .venv
 source .venv/bin/activate
@@ -14,7 +13,7 @@ pip install pyinstaller
 python3 -m PyInstaller --clean --noconfirm main.spec
 
 deactivate
-```
+
 
 if there is an error about webengine add to main.spec <br>
     excludes=[ <br>
@@ -38,7 +37,7 @@ optionally remove src/ and main.py or make into .xzm <br><br>
 ##
 will later take steps to reduce size but these dont appear to be needed: <br><br>
 run with excludes above to remove size further. Qml and WebEngine taking size <br><br> 
-and to reduce further remove<br><br>
+and to reduce further remove a few libraries<br><br>
 /usr/local/recentchanges/internal_/libicudata.so.77 31 mb <br>
 /usr/local/recentchanges/internal_/libcrypto.so.3 6 mb <br>
 /usr/local/recentchanges/dist/main/_internal/libQt6Network.so.6 symlink<br>
