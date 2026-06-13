@@ -1,8 +1,5 @@
-## Pyinstaller Linux qt recentchanges <br>
 check app install is owned by guest: chown guest:users /usr/local/recentchanges <br>
-if wanting to reduce some size comment out line 8 and 9 in main.spec <br>
-#tmp_ret = collect_all('PySide6') <br>
-#datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2] <br><br>
+## Pyinstaller Linux qt recentchanges <br>
 
 cd /usr/local/recentchanges <br>
 python -m venv .venv <br>
@@ -34,6 +31,11 @@ chown root:root /usr/local/recentchanges <br>
 optionally remove src/ and main.py or make into .xzm <br><br>
 
 ## Adjust size
+if wanting to reduce some size comment out line 8 and 9 in main.spec <br>
+#tmp_ret = collect_all('PySide6') <br>
+#datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2] <br><br>
+
+
 will later take steps to reduce size but these dont appear to be needed: <br><br>
 run with excludes above to remove size further. Qml and WebEngine taking size <br><br> 
 and to reduce further remove a few libraries<br><br>
