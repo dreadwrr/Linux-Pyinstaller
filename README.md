@@ -1,5 +1,5 @@
-check app install is owned by guest: chown guest:users /usr/local/recentchanges <br>
-## Pyinstaller Linux qt recentchanges <br>
+first check app install is owned by guest: chown guest:users /usr/local/recentchanges <br>
+## Pyinstaller Linux qt recentchanges <br><br>
 
 cd /usr/local/recentchanges <br>
 python -m venv .venv <br>
