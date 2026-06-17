@@ -19,7 +19,6 @@ if there is an error about webengine add to main.spec <br>
     'PySide6.QtWebEngineCore', <br>
     'PySide6.QtNetwork', <br>
     'PySide6.QtQml', <br>
-    'PySide6.QtMultimedia', <br>
     'PySide6.QtCharts', <br>
     'PySide6.QtPrintSupport', <br>
     ], <br>
