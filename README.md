@@ -48,7 +48,7 @@ remove folder /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/translatio
 try with setting strip=True 
 
 ## Nuitka
-Requires python <= 3.12.11
+Requires python <= 3.12.11. 3.13 doesnt work
 Found a suitable build and looks promising as the compressed size is 53mb and is compiled to c
 
 Note: This requires the 6.0.0-pyinstaller.xzm as the nuitka internal extracted location had to be added
@@ -62,7 +62,7 @@ pip install nuitka <br>
 pip install zstandard
 
 
-``` python -m nuitka --onefile --output-filename=main --onefile-tempdir-spec="{TEMP}/onefile_$$_118624_YD1fmvHJ_Qc" --remove-output --enable-plugin='pyside6' --noinclude-qt-plugins=printsupport --include-qt-plugins=sensible,platforms,sqldrivers --jobs=4 main.py ```
+``` python -m nuitka --onefile --output-filename=main --onefile-tempdir-spec="{TEMP}/onefile_$$_118624_YD1fmvHJ_Qc" --remove-output --enable-plugin='pyside6' --noinclude-qt-plugins=printsupport --include-qt-plugins=sensible,platforms,sqldrivers, multimedia --jobs=4 main.py ```
 
 remove main.build and main.dist
 
