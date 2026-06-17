@@ -48,7 +48,7 @@ remove folder /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/translatio
 try with setting strip=True 
 
 ## Nuitka
-
+Requires python <= 3.12.11
 Found a suitable build and looks promising as the compressed size is 53mb and is compiled to c
 
 Note: This requires the 6.0.0-pyinstaller.xzm as the nuitka internal extracted location had to be added
