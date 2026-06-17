@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from .logs import emit_log
 from . import logs
-from .pyfunctions import is_valid_datetime
 from .pyfunctions import is_integer
+from .pyfunctions import is_valid_datetime
 from .pyfunctions import matches_any_pattern
 from .pyfunctions import new_meta
 from .pyfunctions import parse_datetime
@@ -234,7 +234,7 @@ def hanly(parsed_chunk, checksum, cdiag, dbopt, ps, usr, logging_values, sys_tab
                                     #         md5 =
                                     #     else:
                                     #         md5 = record[5] # file wasnt cached and was calculated in fsearch earlier
-                                    # md5 = calculate_checksum(file_path)
+                                    # md5 = get_md5(file_path)
                                     # if md5:
                                     #     if md5 != previous[5]:
                                     #         stealth(filename, label, entry, a_size, original_size, cdiag)
@@ -307,11 +307,11 @@ def hanly(parsed_chunk, checksum, cdiag, dbopt, ps, usr, logging_values, sys_tab
                 print("Hanly formatting problem was logged")
                 emit_log("DEBUG", f"current inode {record[3]} previous {previous[3]}, current timestamp {recent_timestamp} previous {previous_timestamp} \n original {previous} \n current {record}", logs.WORKER_LOG_Q, logger=logger)
 
-        if dbit and current_step <= len(steps) - 1:
-            if logger:
-                # prog_v = round(delta_v) + strt
-                print(f"Progress: {endp}%", flush=True)  # :.2f
-            else:
-                emit_log("prog", x, logs.WORKER_LOG_Q)
+    if dbit and current_step <= len(steps) - 1:
+        if logger:
+            # prog_v = round(delta_v) + strt
+            print(f"Progress: {endp}%", flush=True)  # :.2f
+        else:
+            emit_log("prog", x, logs.WORKER_LOG_Q)
 
     return results, sys_records, log_entries, csum

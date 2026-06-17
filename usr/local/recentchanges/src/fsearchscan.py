@@ -7,7 +7,6 @@ from .fileops import calculate_checksum
 from .fileops import find_link_target
 from .fileops import set_stat
 from .fsearchfunctions import get_cached
-# from .fsearchfunctions import normalize_timestamp
 from .pyfunctions import epoch_to_date
 from .pyfunctions import escf_py
 
@@ -54,7 +53,7 @@ def process_scan(line, checksum, file_type, search_start_dt, cache_f, logger=Non
         if size > CSZE:
             cached = get_cached(cache_f, size, mtime_us, file_path)
             if cached is None:
-                checks, file_dt, file_us, file_st, status = calculate_checksum(file_path, mtime, mtime_us, inode, size, retry=1, max_retry=1, cacheable=True, log_q=logs.WORKER_LOG_Q, logger=logger)
+                checks, file_dt, file_us, file_st, status = calculate_checksum(file_path, mtime, mtime_us, inode, size, retry=1, cacheable=True, log_q=logs.WORKER_LOG_Q, logger=logger)
                 if checks is not None:
                     if status == "Retried":
                         checks, mtime, st, mtime_us, ctime, inode, size = set_stat(line, checks, file_dt, file_st, file_us, inode, logs.WORKER_LOG_Q, logger=logger)
@@ -70,7 +69,7 @@ def process_scan(line, checksum, file_type, search_start_dt, cache_f, logger=Non
                 checks = cached.get("checksum")
 
         else:
-            checks, file_dt, file_us, file_st, status = calculate_checksum(file_path, mtime, mtime_us, inode, size, retry=1, max_retry=1, cacheable=False, log_q=logs.WORKER_LOG_Q, logger=logger)
+            checks, file_dt, file_us, file_st, status = calculate_checksum(file_path, mtime, mtime_us, inode, size, retry=1, cacheable=False, log_q=logs.WORKER_LOG_Q, logger=logger)
             if checks is not None:
                 if status == "Retried":
                     checks, mtime, st, mtime_us, ctime, inode, size = set_stat(line, checks, file_dt, file_st, file_us, inode, logs.WORKER_LOG_Q, logger=logger)
