@@ -30,7 +30,11 @@ chown root:root /usr/local/recentchanges <br>
 optionally remove src/ and main.py or make into .xzm <br><br>
 
 ## Adjust size
-if wanting to reduce some size comment out line 8 and 9 in main.spec <br>
+if wanting to reduce some size <br>
+replace line 5 <br> 
+datas = [('Resources', 'Resources')] <br>
+with data = [] <br><br>
+comment out line 8 and 9 in main.spec <br>
 #tmp_ret = collect_all('PySide6') <br>
 #datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2] <br><br>
 
@@ -47,10 +51,8 @@ remove folder /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/translatio
 try with setting strip=True 
 
 ## Nuitka
-Requires python <= 3.12.11. 3.13 doesnt work
+Requires python <= 3.12.11. 3.13 doesnt work <br>
 Found a suitable build and looks promising as the compressed size is 53mb and is compiled to c
-
-Note: This requires the 6.0.0-pyinstaller.xzm as the nuitka internal extracted location had to be added
 
 get patchelf-0.14.3 from pkgs.org <br>
 activate patchelf
