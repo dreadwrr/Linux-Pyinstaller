@@ -1,3 +1,5 @@
+6.2.0 update is being tested and should be available shortly <br><br>
+
 first check app install is owned by guest: chown guest:users /usr/local/recentchanges <br>
 ## Pyinstaller Linux qt recentchanges <br><br>
 
