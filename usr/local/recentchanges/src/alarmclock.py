@@ -687,9 +687,11 @@ class AlarmClock(QWidget):
         return False
 
     def set_format(self, theme):
-        self.ui.lcdNumber.setStyleSheet("")
-        self.ui.lcdNumber.setPalette(self.style().standardPalette())
-        if not theme:
+
+        if theme or theme == "":
+            self.ui.lcdNumber.setStyleSheet("")
+            self.ui.lcdNumber.setPalette(self.style().standardPalette())
+        else:
             return
         palette = self.ui.lcdNumber.palette()
         if theme == "redblack":
@@ -703,7 +705,7 @@ class AlarmClock(QWidget):
         elif theme == "black":
             palette.setColor(palette.ColorRole.WindowText, Qt.GlobalColor.black)
             self.ui.apmlabel.setStyleSheet("color: black;")
-        else:
+        elif theme != "":
             print("Unrecognized theme out of options redblack, red, blue, black. recieved", theme)
             return
 
