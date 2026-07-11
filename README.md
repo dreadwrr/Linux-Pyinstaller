@@ -1,4 +1,4 @@
-posted 6.2.0 update to repo and testing before release <br><br>
+07/11/2026 repo is 6.2.0 testing pyinstall before releasing <br><br>
 
 first check app install is owned by guest: chown guest:users /usr/local/recentchanges <br>
 ## Pyinstaller Linux qt recentchanges <br><br>
