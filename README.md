@@ -55,7 +55,7 @@ try with setting strip=True
 
 ## Nuitka
 Requires python <= 3.12.11. 3.13 doesnt work <br>
-so the following was done on porteus alpha3 <br><br>
+so the following was done on porteus alpha 3 <br><br>
 Found a suitable build and looks promising as the compressed size is 53mb and is compiled to c
 
 get patchelf-0.14.3 from pkgs.org <br>
@@ -70,6 +70,8 @@ pip install zstandard
 ``` python -m nuitka --onefile --output-filename=main --onefile-tempdir-spec="{TEMP}/onefile_$$_118624_YD1fmvHJ_Qc" --remove-output --enable-plugin='pyside6' --noinclude-qt-plugins=printsupport --include-qt-plugins=sensible,platforms,sqldrivers,multimedia --jobs=4 main.py ```
 
 remove main.build and main.dist
+
+Another method would be standalone but it puts the libraries beside the binary and is too messy for distrubtion. Currently trying to figure out a way to solve this so the above method is the current supported method.
 
 
 
