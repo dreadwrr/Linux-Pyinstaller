@@ -55,6 +55,7 @@ try with setting strip=True
 
 ## Nuitka
 Requires python <= 3.12.11. 3.13 doesnt work <br>
+so the following was done on porteus alpha3 <br><br>
 Found a suitable build and looks promising as the compressed size is 53mb and is compiled to c
 
 get patchelf-0.14.3 from pkgs.org <br>
