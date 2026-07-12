@@ -71,7 +71,7 @@ pip install zstandard
 
 remove main.build and main.dist
 
-Another method would be standalone but it puts the libraries beside the binary and is too messy for distrubtion. Currently trying to figure out a way to solve this so the above method is the current supported method.
+Another method would be standalone but it puts the libraries beside the binary and is too messy to distribute. Currently trying to figure out a way to solve this so the above method is the current supported method.
 
 
 
