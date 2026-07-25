@@ -1,5 +1,5 @@
 07/25/2026 <br>
-repo is still 6.2.0 currently testing before releasing 6.5.0 <br><br>
+repo is still 6.5.0 currently testing before releasing <br><br>
 07/11/2026 <br>
 repo is 6.2.0 testing pyinstall before releasing <br><br>
 
