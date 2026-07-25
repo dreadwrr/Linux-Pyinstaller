@@ -1,9 +1,9 @@
 import os
 import platform
 import subprocess
-from PySide6.QtGui import QColor
-from PySide6.QtCore import QTimer, QTime, QElapsedTimer, Signal, QUrl, Qt
-from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput  # QSoundEffect
+# from PySide6.QtGui import QColor, QPalette
+from PySide6.QtCore import QTimer, QTime, QElapsedTimer, Signal, QUrl  # , Qt
+from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput  # , QSoundEffect
 from PySide6.QtWidgets import QWidget, QLCDNumber, QInputDialog
 from src.ui_alarmclock import Ui_AlarmClock
 
@@ -687,30 +687,55 @@ class AlarmClock(QWidget):
         return False
 
     def set_format(self, theme):
+        lcd = self.ui.lcdNumber
+        apm = self.ui.apmlabel
 
-        self.ui.lcdNumber.setStyleSheet("")
-        self.ui.lcdNumber.setStyleSheet("border: 1px solid #808080;")  # self.ui.lcdNumber.setStyleSheet("border: 1px solid transparent;")  # self.ui.lcdNumber.setStyleSheet("")
-        # if theme or theme == "":
-        # self.ui.lcdNumber.setPalette(self.style().standardPalette())
-        if not theme or theme == "":
-            return
-        palette = self.ui.lcdNumber.palette()
-        if theme == "redblack":
-            self.ui.lcdNumber.setStyleSheet("background-color: black; border: 1px solid #330000;")
-        if theme == "red" or theme == "redblack":
-            palette.setColor(palette.ColorRole.WindowText, QColor("#800000"))  # palette.setColor(palette.ColorRole.WindowText, Qt.GlobalColor.red)
-            self.ui.apmlabel.setStyleSheet("color: #800000;")  # self.ui.apmlabel.setStyleSheet("color: red;")
-        elif theme == "blue":
-            palette.setColor(palette.ColorRole.WindowText, QColor("#000080"))  # Qt.GlobalColor.blue
-            self.ui.apmlabel.setStyleSheet("color: #000080;")
-        elif theme == "black":
-            palette.setColor(palette.ColorRole.WindowText, Qt.GlobalColor.black)
-            self.ui.apmlabel.setStyleSheet("color: black;")
-        elif theme != "":
-            print("Unrecognized theme out of options redblack, red, blue, black. recieved", theme)
+        theme = theme or "white"
+
+        colors = {
+            "white": "#ffffff",
+            "red": "#800000",
+            "redblack": "#800000",
+            "blue": "#000080",
+            "black": "#000000",
+            "green": "#00ff00",
+        }
+
+        if theme not in colors:
+            print("Unknown theme:", theme)
             return
 
-        self.ui.lcdNumber.setPalette(palette)
+        color = colors[theme]
+
+        lcd.setStyleSheet(f"""
+            color: {color};
+            border: 1px solid palette(mid);
+        """)
+
+        apm.setStyleSheet(f"color: {color};")
+
+        if theme == "green":
+
+            if platform.system() == "Windows":
+                lcd.setStyleSheet(f"""
+                    color: {color};
+                    background-color: black;
+                    border: 1px solid {color};
+                """)
+            else:
+                # substitutes
+                #   background-color: #1e1e1e;
+                lcd.setStyleSheet(f"""
+                    color: {color};
+                    border: 1px solid {color}
+                """)
+
+        elif theme == "redblack":
+            lcd.setStyleSheet(f"""
+                color: {color};
+                background-color: black;
+                border: 1px solid {color};
+            """)
 
     def set_clock_format(self, _24hformat):
 

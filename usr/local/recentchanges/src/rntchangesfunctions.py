@@ -825,7 +825,7 @@ def tsv_sort_by(row, is_link=False):
 # time from the download or copy which could be from 2021 for example. Also by checking the database a copy
 # can also be detected by having the same checksum and a diffrent filename or inode. Sorted by above.
 #
-def build_tsv(sortcomplete, tmpopt, logf, rout, escaped_user, outpath, method, fmt):
+def build_tsv(sortcomplete, tmpopt, logf, rout, created, escaped_user, outpath, method, fmt):
 
     if method != "rnt":
         if logf is tmpopt:
@@ -835,6 +835,7 @@ def build_tsv(sortcomplete, tmpopt, logf, rout, escaped_user, outpath, method, f
 
     try:
         copy_paths = set()
+        created_paths = set()
 
         if rout:
             for line in rout:
@@ -847,19 +848,23 @@ def build_tsv(sortcomplete, tmpopt, logf, rout, escaped_user, outpath, method, f
                 if action == "Copy":
                     full_path = ' '.join(parts[5:])
                     copy_paths.add(full_path)
+                elif action == "Created":
+                    full_path = ' '.join(parts[5:])
+                    created_paths.add(full_path)
 
-        is_link = any(len(row) > 7 and row[7] == 'y' for row in sortcomplete)
-        header = "Datetime\tFile\tSize(kb)\tType\tSymlink" + ("\tTarget" if is_link else "") + "\tChanged\tcam\tAccessed\tOwner\tStatable\tCopy"
+        is_link = any(len(row) > 9 and row[9] == 'y' for row in sortcomplete)
+        header = "Datetime\tFile\tSize(kb)\tType\tSymlink" + ("\tTarget" if is_link else "") + "\tChanged\tcam\tAccessed\tOwner\tStatable\tCopy\tCreated"
 
         for entry in sortcomplete:
-            if len(entry) < 13:
+            if len(entry) < 19:
                 continue
 
             is_statable = st = None
-            mtyp = is_copy = ""
+            mtyp = is_copy = is_created = ""
 
             dt = entry[0]
             fpath = entry[1]
+            label = entry[18]
 
             if not fpath:
                 continue
@@ -871,25 +876,28 @@ def build_tsv(sortcomplete, tmpopt, logf, rout, escaped_user, outpath, method, f
             except Exception:
                 pass
 
-            sym_frm = entry[7]
+            sym_frm = entry[9]
             sym = sym_frm if sym_frm is not None else ""
             stat_bool = "y" if is_statable else ""  # originally was "" as statable but could be confusing
 
-            onr = entry[8]
+            onr = entry[10]
             if is_statable:
                 sz = round(st.st_size / 1024, 2)
                 # md = epoch_to_date(st.st_mtime)  # epoch_to_str(st.st_mtime)
             else:
-                sz = entry[6]
+                sz = entry[8]
                 # md = dt
 
             ae = entry[4]
             creation_time = entry[2]
-            cam = entry[11]
-            target = entry[12] if entry[12] else ""
+            cam = entry[13]
+            target = entry[14] if entry[14] else ""
 
-            if fpath in copy_paths:
+            if label in copy_paths:
                 is_copy = "y"
+
+            if label in created:
+                is_created = "y"
 
             row = (
                 f"{dt.strftime(fmt) if dt else ''}\t"
@@ -906,7 +914,8 @@ def build_tsv(sortcomplete, tmpopt, logf, rout, escaped_user, outpath, method, f
                 f"{ae or ''}\t"
                 f"{onr}\t"
                 f"{stat_bool}\t"
-                f"{is_copy}"
+                f"{is_copy}\t"
+                f"{is_created}\t"
             )
 
             tsv_files.append(row)
@@ -976,21 +985,21 @@ def run_doctrine(appdata_local, usrDIR, sortcomplete, tmpopt, logf, rout, toml_f
     all_data = []
     for record in sortcomplete:
 
-        if len(record) < 17:
+        if len(record) < 19:
             logging.debug("An entry for POSTOP was short less than 17. record: %s", record)
             continue
 
         mtime = record[0].strftime(fmt)  # 1 2
         changetime = record[2] if record[2] else "None None"  # 3 4
         atime = record[4] if record[4] else "None None"  # 5 6
-        filesize = record[6]  # 7
-        sym = record[7]  # 8
-        user = record[8]  # 9
-        group = record[9]  # 10
-        cam = record[11]  # 11
-        lastmodified = record[13] if record[13] else "None None"    # 12 13
-        is_copy = "y" if record[16] in copy_paths else "None"       # 14
-        file_path = record[16]                                      # 15
+        filesize = record[8]  # 7
+        sym = record[9]  # 8
+        user = record[10]  # 9
+        group = record[11]  # 10
+        cam = record[13]  # 11
+        lastmodified = record[15] if record[15] else "None None"    # 12 13
+        is_copy = "y" if record[18] in copy_paths else "None"       # 14
+        file_path = record[18]                                      # 15
         # inode = record[3]
         # checksum = record[5]
         # mode = record[10]
