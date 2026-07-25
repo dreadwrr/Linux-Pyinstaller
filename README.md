@@ -1,7 +1,3 @@
-07/25/2026 <br>
-repo is still 6.5.0 currently testing before releasing <br><br>
-07/11/2026 <br>
-repo is 6.2.0 testing pyinstall before releasing <br><br>
 
 first check app install is owned by guest: chown guest:users /usr/local/recentchanges <br>
 ## Pyinstaller Linux qt recentchanges <br><br>
@@ -15,19 +11,6 @@ pip install pyinstaller <br>
 python3 -m PyInstaller --clean --noconfirm main.spec <br>
 deactivate <br><br>
 
-
-if there is an error about webengine add to main.spec <br>
-    excludes=[ <br>
-    'tkinter', <br>
-    'PySide6.QtWebEngine', <br>
-    'PySide6.QtWebEngineWidgets', <br>
-    'PySide6.QtWebEngineCore', <br>
-    'PySide6.QtNetwork', <br>
-    'PySide6.QtQml', <br>
-    'PySide6.QtCharts', <br>
-    'PySide6.QtPrintSupport', <br>
-    ], <br>
-<br>
 copy main and _internal from dist/main folder to /usr/local/recentchanges <br>
 chown root:root main <br>
 chown root:root /usr/local/recentchanges <br>
@@ -36,13 +19,6 @@ optionally remove src/ and main.py or make into .xzm <br><br>
 
 ## Adjust size
 if wanting to reduce some size <br>
-replace line 5 <br> 
-datas = [('Resources', 'Resources')] <br>
-with data = [] <br><br>
-comment out line 8 and 9 in main.spec <br>
-#tmp_ret = collect_all('PySide6') <br>
-#datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2] <br><br>
-
 
 will later take steps to reduce size but these dont appear to be needed: <br><br>
 run with excludes above to remove size further. Qml and WebEngine taking size <br><br> 
