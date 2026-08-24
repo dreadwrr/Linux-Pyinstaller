@@ -1,4 +1,5 @@
 repo updated to 6.5.1 but have yet to test it. will release once tested.
+currently updating
 
 first check app install is owned by guest: chown guest:users /usr/local/recentchanges <br>
 ## Pyinstaller Linux qt recentchanges <br><br>
