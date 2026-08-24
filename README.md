@@ -51,6 +51,5 @@ remove main.build and main.dist
 Another method would be standalone but it puts the libraries beside the binary and is too messy to distribute. Currently trying to figure out a way to solve this so the above method is the current supported method.
 
 
-
-![Alt text](https://i.imgur.com/xK10DuX.png) <br>
+![Alt text](https://i.imgur.com/xK10DuX.png)![Alt text](https://i.imgur.com/9A2sa7v.png) <br>
 ![Alt text](https://i.imgur.com/3dXwKzW.png)<br><br>
