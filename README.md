@@ -48,7 +48,12 @@ pip install zstandard
 
 remove main.build and main.dist
 
-Another method would be standalone but it puts the libraries beside the binary and is too messy to distribute. Currently trying to figure out a way to solve this so the above method is the current supported method.
+There is an alternative to using onefile above --standalone which would put the output into main.dist folder. However it is not as organized as pyinstaller onedir. This can be overcome with adding a symlink in app install to main.dist.
+
+```
+nuitka main.py --mode=standalone --enable-plugin='pyside6' --remove-output --include-qt-plugins=sqldrivers,multimedia
+```
+
 
 
 ![Alt text](https://i.imgur.com/xK10DuX.png) <br>
