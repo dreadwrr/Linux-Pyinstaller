@@ -53,10 +53,10 @@ There is an alternative to using onefile above --standalone which would put the 
 first ln 3634 in main.py add another .parent as well as configfunctions.py ln 18 add another .parent. <br><br>
 
 ```
-nuitka main.py --mode=standalone --enable-plugin='pyside6' --remove-output --include-qt-plugins=sqldrivers,multimedia
+nuitka main.py --mode=standalone --output-filename=main --enable-plugin='pyside6' --remove-output --include-qt-plugins=sqldrivers,multimedia
 ```
 create a symlink to the executable in app install in terminal: <br>
-ln -s ./main.dist/main.bin main.bin <br><br>
+ln -s ./main.dist/main main <br><br>
 
 
 ![Alt text](https://i.imgur.com/xK10DuX.png) <br>
