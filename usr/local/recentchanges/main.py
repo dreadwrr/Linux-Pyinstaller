@@ -1,4 +1,4 @@
-# 09/15/2026              Qt gui linux                 Developer buddy 6.5.2
+# 09/15/2026              Qt gui linux                 Developer buddy 6.5.2.1
 import glob
 import logging
 import multiprocessing
@@ -218,7 +218,7 @@ class MainWindow(QMainWindow):
         # QTimer.singleShot(5000, self.display_db)
 
         # Vars
-        self.app_version = "6.5.2"
+        self.app_version = "6.5.2.1"
 
         self.dispatch = appdata_local / "set_recent_helper"  # normal python use see ln 269 for pyinstaller detect
         self.app = str(appdata_local / "main.py")
@@ -3632,6 +3632,7 @@ def start_main_window():
     # os.environ["XDG_RUNTIME_DIR"] = "/run/user/1000"
 
     appdata_local = Path(sys.argv[0]).resolve().parent  # software install aka workdir # find_install()
+
     # bundle_dir = Path(getattr(sys, "_MEIPASS", appdata_local))
     toml_file, json_file, home_dir, xdg_config, xdg_runtime, xdg_state, usr, uid, gid = get_config(appdata_local, platform="Linux")
 
