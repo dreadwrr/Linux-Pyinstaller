@@ -1,3 +1,4 @@
+recommended to use python <= 3.12.11 as it doesnt appear pyinstaller builds correctly otherwise. <br>
 first check app install is owned by guest: chown guest:users /usr/local/recentchanges <br>
 ## Pyinstaller Linux qt recentchanges <br><br>
 
