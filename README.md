@@ -1,7 +1,9 @@
-Currently testing before posting 6.6.0.0 <br>
 
-recommended to use python <= 3.12.11 as it doesnt appear pyinstaller builds correctly otherwise. <br>
 first check app install is owned by guest: chown guest:users /usr/local/recentchanges <br>
+
+As well ensure in clean environment recommend using always fresh mode. This is to avoid conflicts <br>
+with pyinstaller failing to build <br>
+
 ## Pyinstaller Linux qt recentchanges <br><br>
 
 cd /usr/local/recentchanges <br>
@@ -22,19 +24,14 @@ optionally remove src/ and main.py or make into .xzm <br><br>
 ## Adjust size
 if wanting to reduce some size <br>
 
-will later take steps to reduce size but these dont appear to be needed: <br><br>
-run with excludes above to remove size further. Qml and WebEngine taking size <br><br> 
-and to reduce further remove a few libraries<br><br>
+to reduce further remove a few libraries<br><br>
 /usr/local/recentchanges/internal_/libicudata.so.77 31 mb <br>
 /usr/local/recentchanges/internal_/libcrypto.so.3 6 mb <br>
-/usr/local/recentchanges/dist/main/_internal/libQt6Network.so.6 symlink<br>
-/usr/local/recentchanges/dist/main/_internal/PySide6/Qt/lib/libQt6Network.so.6 2.1 mb <br>
 /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/lib/libQt6Quick.so.6 7.9mb <br>
 /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/lib/libQt6Qml.so.6 6.6mb <br>
 /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/lib/libQt6Pdf.so.6 5.5mb <br>
 
 remove folder /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/translations/ 13.6mb <br>
-try with setting strip=True 
 
 After removing and strip the final size was 203mb <br>
 
