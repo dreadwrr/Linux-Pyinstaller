@@ -29,6 +29,9 @@ and to reduce further remove a few libraries<br><br>
 /usr/local/recentchanges/internal_/libcrypto.so.3 6 mb <br>
 /usr/local/recentchanges/dist/main/_internal/libQt6Network.so.6 symlink<br>
 /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/lib/libQt6Network.so.6 2.1 mb <br>
+/usr/local/recentchanges/dist/main/_internal/PySide6/Qt/lib/libQt6Quick.so.6 7.9mb <br>
+/usr/local/recentchanges/dist/main/_internal/PySide6/Qt/lib/libQt6Qml.so.6 6.6mb <br>
+/usr/local/recentchanges/dist/main/_internal/PySide6/Qt/lib/libQt6Pdf.so.6 5.5mb <br>
 
 remove folder /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/translations/ 13.6mb <br>
 try with setting strip=True 
