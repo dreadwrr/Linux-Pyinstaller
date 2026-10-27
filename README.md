@@ -36,6 +36,8 @@ and to reduce further remove a few libraries<br><br>
 remove folder /usr/local/recentchanges/dist/main/_internal/PySide6/Qt/translations/ 13.6mb <br>
 try with setting strip=True 
 
+After removing and strip the final size was 203mb <br>
+
 ## Nuitka
 Requires python <= 3.12.11. 3.13 doesnt work <br>
 so the following was done on porteus alpha 3 <br><br>
